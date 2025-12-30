@@ -23,3 +23,11 @@ A daily puzzle game inspired by Wordle. Figure out where to put the correct furn
 chore: repository and project initialization
 
 Generated new Next.js project using `npm create next-app@latest`, and created `README.md`. Have not made any changes to the template project yet.
+
+## Week 2:
+
+feat: set up webpage layout and created placeholders
+
+Created dedicated files and directories for future work. All the visuals are currently only placeholders, but will be changed in the upcoming weeks. Placeholders are created for both desktop and mobile version.
+
+Only the front-end has been worked on. Back-end tasks remain untouched.
