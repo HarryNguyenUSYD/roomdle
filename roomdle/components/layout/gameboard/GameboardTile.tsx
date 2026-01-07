@@ -1,21 +1,27 @@
 "use client";
 
-import { DEBUG } from "./gameboard.constants";
 import { useGameboardContext } from "./gameboard.context";
+import { useDebugContext } from "@/contexts/DebugContext";
+import { GameboardTileState } from "./gameboard.types";
 
-type GameboardTileProps = {
-  x: number,
-  y: number
-}
-
-export default function GameboardTile({ x, y }: GameboardTileProps) {
-  const context = useGameboardContext();
-  if (!context) { return null; }
+export default function GameboardTile({ x, y, solution, color }: GameboardTileState) {
+  const gameboardContext = useGameboardContext();
+  const debugContext = useDebugContext();
+  if (!gameboardContext || !debugContext) { return null; }
 
   return (
     <div className="relative w-full h-full group">
-      <div className="w-full h-full bg-white group-hover:bg-blue-700 flex justify-center items-center">
-        {DEBUG && <p className="text-2xl text-black">{`(${x}, ${y})`}</p>}
+      <div className="w-full h-full bg-white group-hover:brightness-75 flex flex-col justify-center items-center">
+        {
+          debugContext.settings.isDebugging &&
+          debugContext.settings.isShowingCoordinates &&
+          <p className="text-xl text-black text-center">{`(${x}, ${y})`}</p>
+        }
+        {
+          debugContext.settings.isDebugging &&
+          debugContext.settings.isShowingSolution &&
+          <p className="text-xl text-black text-center">{`(${solution})`}</p>
+        }
       </div>
     </div>
   )

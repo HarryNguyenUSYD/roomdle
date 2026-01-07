@@ -10,7 +10,9 @@ export default function Menu({ handleSetInactive, children }: MenuProps) {
         className="absolute w-full h-full bg-black opacity-30"
         onClick={handleSetInactive}
       ></div>
-      <div className="relative w-[75vw] h-[60vh] lg:w-[30vw] lg:h-[50vh] p-5 z-10 bg-black flex flex-col justify-center items-center text-center">
+      <div
+        className="relative w-[75vw] h-[60vh] lg:w-[30vw] lg:h-[50vh] px-10 py-5 lg:px-20 lg:py-10 z-10
+          bg-black flex flex-col justify-center items-center text-center gap-5 overflow-y-auto">
         <button
           className="absolute top-5 right-5 size-20 cursor-pointer text-2xl lg:text-5xl z-10"
           onClick={handleSetInactive}
