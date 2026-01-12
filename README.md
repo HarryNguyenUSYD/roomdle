@@ -32,12 +32,16 @@ Created dedicated files and directories for future work. All the visuals are cur
 
 Only the front-end has been worked on. Back-end tasks remain untouched.
 
-- TODO: Add styles for tablet device.
-
 ## Week 3:
 
 feat: added puzzle-generating algorithm in Puzzle class, Debug menu, and connected Gameboard to Puzzle.
 
 Created files and directories (`game/`) for the backend, currently includes the `Puzzle` class and other utils. Also created debug-related components with `/contexts/DebugContext` and some Debug buttons + menu in `/layout/gameboard/GameboardDebug`. Finally, connected the new `Puzzle` class to the `Gameboard`, so now I can use debugging features to edit the puzzle, which will show on the board.
 
-- TODO: Add styles for tablet device.
+## Week 4:
+
+feat: added tile highlighting, added sprites for tiles and tiles highlighting, and added high contrast mode.
+
+Added many sprites, including the tiles, highlight (green and yellow) and high contrast icons. Added an algorithm to select the correct highlight sprite from surrounding area. Added the Space hotkey for quick random puzzle generation. Added the "High Contrast" setting in the Settings menu for high contrast icon.
+
+Relocated `page.tsx` components to a separate folder, and relocated all contexts to now wrap around the entire page. Created `ContextWrapper` as a large wrapper containing all Contexts.
