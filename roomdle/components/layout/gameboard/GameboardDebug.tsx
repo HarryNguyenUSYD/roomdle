@@ -6,6 +6,7 @@ import MenuButton from "@/components/ui/menu/MenuButton";
 import useMenu from "@/hooks/useMenu";
 import { useDebugContext } from "@/contexts/DebugContext";
 import { Puzzle } from "@/game/Puzzle";
+import { useEffect } from "react";
 
 type GameboardDebugProps = { puzzle: Puzzle }
 
@@ -14,6 +15,18 @@ export default function GameboardDebug({ puzzle }: GameboardDebugProps) {
   const debugContext = useDebugContext();
   
   const { isActive, handleSetInactive, handleSetActive } = useMenu();
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      e.preventDefault();
+      if (debugContext.settings.isDebugging && e.key === " ") {
+        puzzle.generateRandomPuzzle();
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [debugContext.settings.isDebugging, puzzle]);
 
   if (!gameboardContext || !debugContext) { return null; }
 

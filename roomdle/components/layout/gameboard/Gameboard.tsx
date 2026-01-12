@@ -7,35 +7,50 @@ import { Puzzle } from "@/game/Puzzle";
 import { DEBUG } from "./gameboard.constants";
 import GameboardDebug from "./GameboardDebug";
 import { DebugContext, DebugSettings } from "@/contexts/DebugContext";
+import { getColor, getNeighbors } from "./gameboard.utils";
+import { GameboardTileColor } from "./gameboard.types";
 
 export default function Gameboard() {
   const puzzle = useMemo(() => new Puzzle(), []);
   const puzzleSync = useSyncExternalStore((l) => puzzle.subscribe(l), () => puzzle.getSnapshot(), () => puzzle.getSnapshot());
-  
-  const [debugSettings, setDebugSettings] = useState<DebugSettings>({
-    isDebugging: true,
-    isShowingCoordinates: false,
-    isShowingSolution: true
-  });
+  const [predictionMap, setPredictionMap] = useState<number[][]>(Array.from({ length: puzzleSync.length }, () =>
+    Array.from({ length: puzzleSync[0].length }, () => (15))
+  ));  
+
+  const colorMap = useMemo(() => {
+    const out: GameboardTileColor[][] = []
+    for (let y = 0; y < puzzleSync.length; y++) {
+      const row: GameboardTileColor[] = [];
+      for (let x = 0; x < puzzleSync[0].length; x++) {
+        row.push(getColor(predictionMap[x][y], puzzleSync[x][y]));
+      }
+
+      out.push(row);
+    }
+
+    return out;
+  }, [predictionMap, puzzleSync]);
 
   return (
     <GameboardContext.Provider value={true}>
-      <DebugContext.Provider value={{settings: debugSettings, setSettings: setDebugSettings}}>
-        <div className="size-[80vw] lg:size-[50vh] flex-none grid grid-cols-5 gap-2">
-            {puzzleSync.map((rows, x) => (
-              rows.map((solution, y) => (
-                <Gameboard.Tile
-                  key={`gameboard_tile_${x}_${y}`}
-                  x={x}
-                  y={y}
-                  solution={solution}
-                  color={"gray"}
-                />
-              ))
-            ))}
-        </div>
-        {DEBUG && <GameboardDebug puzzle={puzzle} />}
-      </DebugContext.Provider>
+      <div
+        className={`relative size-[80vw] lg:size-[50vh] flex-none grid`}
+        style={{ gridTemplateColumns: `repeat(${puzzleSync.length}, minmax(0, 1fr))` }}
+      >
+        {puzzleSync.map((rows, y) => (
+          rows.map((solution, x) => (
+            <Gameboard.Tile
+              key={`gameboard_tile_${x}_${y}`}
+              x={x}
+              y={y}
+              neighbors={getNeighbors(colorMap, [x, y], getColor(predictionMap[x][y], solution))}
+              color={getColor(predictionMap[x][y], solution)}
+              solution={solution}
+            />
+          ))
+        ))}
+      </div>
+      {DEBUG && <GameboardDebug puzzle={puzzle} />}
     </GameboardContext.Provider>
   )
 }

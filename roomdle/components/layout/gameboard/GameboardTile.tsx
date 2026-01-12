@@ -3,24 +3,71 @@
 import { useGameboardContext } from "./gameboard.context";
 import { useDebugContext } from "@/contexts/DebugContext";
 import { GameboardTileState } from "./gameboard.types";
+import Image from "next/image";
+import { getHighContrastIcon, getHighlightImage } from "./gameboard.utils";
+import { useMemo } from "react";
+import { SPECIAL_OFFSET, YELLOW_OFFSET } from "./gameboard.highlight";
+import { useSettingsContext } from "@/contexts/SettingsContext";
 
-export default function GameboardTile({ x, y, solution, color }: GameboardTileState) {
+export default function GameboardTile({ x, y, neighbors, color, solution }: GameboardTileState) {
   const gameboardContext = useGameboardContext();
   const debugContext = useDebugContext();
-  if (!gameboardContext || !debugContext) { return null; }
+  const settingsContext = useSettingsContext();
+  
+  const highlightImage = useMemo(() => {
+    if (color === "black" || color === "gray") {
+      return null;
+    }
+    
+    const highlight = getHighlightImage(neighbors);
+    if (highlight.index >= SPECIAL_OFFSET) {
+      return { index: highlight.index, rotation: highlight.rotation };
+    } else if (color === "green") {
+      return { index: highlight.index, rotation: highlight.rotation };
+    } else if (color === "yellow") {
+      return { index: highlight.index + YELLOW_OFFSET, rotation: highlight.rotation }
+    }
+  }, [color, neighbors]);
 
+  const highContrastIcon = useMemo(() => (getHighContrastIcon(color)), [color]);
+
+  if (!gameboardContext || !debugContext || !settingsContext) { return null; }
+  
   return (
-    <div className="relative w-full h-full group">
-      <div className="w-full h-full bg-white group-hover:brightness-75 flex flex-col justify-center items-center">
+    <div className="relative w-full h-full hover:brightness-150 duration-100 select-none">
+      <div
+        className={`w-full h-full flex flex-col justify-center items-center`}>
+        <Image
+          src={`/roomdle-grid${((x + y) % 2) + 1}.png`}
+          width={500}
+          height={500}
+          className={`absolute w-full h-full`}
+          alt="Gameboard Tile"
+        />
+        {highlightImage && <Image
+          src={`/roomdle-highlight/roomdle-highlight${highlightImage.index}.png`}
+          style={{ rotate: highlightImage.rotation + "deg" }}
+          width={500}
+          height={500}
+          className={`absolute w-full h-full`}
+          alt="Gameboard Highlight Tile"
+        />}
+        {settingsContext.settings.highContrast && <Image
+          src={`/roomdle-highlight/roomdle-highlight${highContrastIcon}.png`}
+          width={500}
+          height={500}
+          className={`absolute w-full h-full`}
+          alt="Gameboard High Contrast Icon"
+        />}
         {
           debugContext.settings.isDebugging &&
           debugContext.settings.isShowingCoordinates &&
-          <p className="text-xl text-black text-center">{`(${x}, ${y})`}</p>
+          <p className="text-xl text-black text-center z-10">{`(${x}, ${y})`}</p>
         }
         {
           debugContext.settings.isDebugging &&
           debugContext.settings.isShowingSolution &&
-          <p className="text-xl text-black text-center">{`(${solution})`}</p>
+          <p className="text-xl text-black text-center z-10">{`(${solution})`}</p>
         }
       </div>
     </div>
