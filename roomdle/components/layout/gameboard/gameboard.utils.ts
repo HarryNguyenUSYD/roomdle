@@ -1,5 +1,6 @@
-import { HIGHLIGHT_ORITENTATIONS } from "./gameboard.highlight";
-import { GameboardTileColor, GameboardTileHighlight } from "./gameboard.types";
+import { HighlightColor } from "@/game/game.types";
+import { EMPTY_TILE, HIGHLIGHT_ORITENTATIONS } from "./gameboard.highlight";
+import { GameboardTileHighlight } from "./gameboard.types";
 
 /**
  * [-1, -1][0, -1][1, -1]
@@ -17,7 +18,7 @@ export const DIRECTIONS = [
   [1, 1]
 ] as const;
 
-export function getColor(current: number, solution: number): GameboardTileColor {
+export function getColor(current: number, solution: number): HighlightColor {
   if (current === -1) {
     return "gray";
   } else if (solution === -1) {
@@ -30,11 +31,10 @@ export function getColor(current: number, solution: number): GameboardTileColor 
 /**
  * Get the color of the neighboring tiles, return as a number.
  * @param map The color map
- * @param pos The coord of tile being checked
- * @param value The color of that tile
+ * @param pos The coordinates of the tile being checked
  * @returns 0bXXXXYYYY where X are the cardinal values, Y are the diagonal values (1 if same color, 0 if not)
  */
-export function getNeighbors(map: GameboardTileColor[][], pos: number[], value: GameboardTileColor) {
+export function getNeighbors(map: HighlightColor[][], pos: number[]) {
   let out = 0;
   for (let i = 0; i < DIRECTIONS.length; i++) {
     const d = DIRECTIONS[i];
@@ -44,8 +44,8 @@ export function getNeighbors(map: GameboardTileColor[][], pos: number[], value: 
       pos[1] + d[1] >= 0 &&
       pos[1] + d[1] < map.length
     ) {
-      if (map[pos[0] + d[0]][pos[1] + d[1]] === value) {
-        out |= (1 << (7 - i));
+      if (map[pos[0] + d[0]][pos[1] + d[1]] === map[pos[0]][pos[1]]) {
+        out |= (1 << (DIRECTIONS.length - 1 - i));
       }
     }
   }
@@ -60,7 +60,7 @@ export function getHighlightImage(neighbors: number): GameboardTileHighlight {
   const firstOutput = HIGHLIGHT_ORITENTATIONS.get(cardinal);
   
   if (!firstOutput) {
-    return { index: 30, rotation: "0" }
+    return { index: EMPTY_TILE, rotation: "0" }
   }
   
   for (const [key, value] of firstOutput) {
@@ -69,10 +69,10 @@ export function getHighlightImage(neighbors: number): GameboardTileHighlight {
     }
   }
 
-  return { index: 30, rotation: "0" }
+  return { index: EMPTY_TILE, rotation: "0" }
 }
 
-export function getHighContrastIcon(color: GameboardTileColor): number {
+export function getHighContrastIcon(color: HighlightColor): number {
   switch (color) {
     case "black":
       return 29;

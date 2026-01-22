@@ -38,25 +38,25 @@ export default function GameboardTile({ x, y, neighbors, color, solution }: Game
       <div
         className={`w-full h-full flex flex-col justify-center items-center`}>
         <Image
-          src={`/roomdle-grid${((x + y) % 2) + 1}.png`}
-          width={500}
-          height={500}
-          className={`absolute w-full h-full`}
+          src={`/roomdle-grid/roomdle-grid${((x + y) % 2) + 1}.png`}
+          width={25}
+          height={25}
+          className={`absolute w-full h-full ${(color === "black") && "brightness-50"} pixel-art`}
           alt="Gameboard Tile"
         />
         {highlightImage && <Image
           src={`/roomdle-highlight/roomdle-highlight${highlightImage.index}.png`}
-          style={{ rotate: highlightImage.rotation + "deg" }}
-          width={500}
-          height={500}
-          className={`absolute w-full h-full`}
+          style={{ rotate: highlightImage.rotation + "deg"}}
+          width={25}
+          height={25}
+          className={`absolute w-full h-full pixel-art`}
           alt="Gameboard Highlight Tile"
         />}
         {settingsContext.settings.highContrast && <Image
           src={`/roomdle-highlight/roomdle-highlight${highContrastIcon}.png`}
-          width={500}
-          height={500}
-          className={`absolute w-full h-full`}
+          width={25}
+          height={25}
+          className={`absolute w-full h-full pixel-art`}
           alt="Gameboard High Contrast Icon"
         />}
         {

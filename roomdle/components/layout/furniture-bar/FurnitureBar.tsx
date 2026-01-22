@@ -1,6 +1,7 @@
 "use client";
 
 import Furniture from "@/components/ui/furniture/Furniture";
+import { FURNITURE_ORIENTATIONS } from "@/game/game.consts";
 import { useState } from "react";
 
 export default function FurnitureBar() {
@@ -19,9 +20,15 @@ export default function FurnitureBar() {
 
 function FurnitureBarDesktop() {
   return (
-    <div className="w-[65vw] h-[20vh]">
-      <div className="relative w-full h-full px-20 bg-amber-700 flex flex-row justify-start items-center gap-20 overflow-x-auto">
-        {Array.from({ length: 20 }).map((_, i) => <Furniture key={`furniture_${i}`} />)}
+    <div className="relative w-[65vw] h-[25vh] border-4 bg-gray-800 overflow-x-auto">
+      <div className="relative w-auto h-full grid grid-cols-9 grid-flow-row-dense z-10">
+        {FURNITURE_ORIENTATIONS.map((orientation, i) => (
+          <Furniture
+            key={`furniture_${i}`}
+            orientation={orientation}
+            color="gray"
+          />
+        ))}
       </div>
     </div>
   )
@@ -36,14 +43,22 @@ function FurnitureBarMobile() {
       style={{ bottom: isActive ? "0" : "calc(-50vh + 2rem)" }}
     >
       <button
-        className="w-30 h-8 rounded-t-2xl bg-amber-700 text-white text-md"
+        className="w-30 h-8 rounded-t-2xl bg-gray-800 text-white text-md"
         onClick={() => setIsActive(!isActive)}
       >
         Furniture Bar
       </button>
       {isActive && (
-        <div className="relative w-full h-full px-10 py-10 bg-amber-700 grid grid-cols-2 gap-10 overflow-y-auto">
-          {Array.from({ length: 20 }).map((_, i) => <Furniture key={`furniture_${i}`} />)}
+        <div className="relative w-full h-auto px-10 py-10 bg-gray-800 overflow-y-auto">
+          <div className="relative w-full h-auto grid grid-cols-5 grid-flow-row-dense z-10">
+            {FURNITURE_ORIENTATIONS.map((orientation, i) => (
+              <Furniture
+                key={`furniture_${i}`}
+                orientation={orientation}
+                color="gray"
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>

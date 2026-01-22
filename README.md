@@ -45,3 +45,9 @@ feat: added tile highlighting, added sprites for tiles and tiles highlighting, a
 Added many sprites, including the tiles, highlight (green and yellow) and high contrast icons. Added an algorithm to select the correct highlight sprite from surrounding area. Added the Space hotkey for quick random puzzle generation. Added the "High Contrast" setting in the Settings menu for high contrast icon.
 
 Relocated `page.tsx` components to a separate folder, and relocated all contexts to now wrap around the entire page. Created `ContextWrapper` as a large wrapper containing all Contexts.
+
+## Week 5:
+
+feat: added sprites for furniture pieces, and reworked the functionality of the `Furniture Bar`
+
+Added sprites of the `Furniture` pieces, and implemented the grid display of the `Furniture Bar`. Additional work to be done on the bar, including adding tiles backdrop (to highlight the grid), size slider, and decorative borders.

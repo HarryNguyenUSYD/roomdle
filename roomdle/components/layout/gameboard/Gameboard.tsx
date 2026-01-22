@@ -6,9 +6,8 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { Puzzle } from "@/game/Puzzle";
 import { DEBUG } from "./gameboard.constants";
 import GameboardDebug from "./GameboardDebug";
-import { DebugContext, DebugSettings } from "@/contexts/DebugContext";
 import { getColor, getNeighbors } from "./gameboard.utils";
-import { GameboardTileColor } from "./gameboard.types";
+import { HighlightColor } from "@/game/game.types";
 
 export default function Gameboard() {
   const puzzle = useMemo(() => new Puzzle(), []);
@@ -18,9 +17,9 @@ export default function Gameboard() {
   ));  
 
   const colorMap = useMemo(() => {
-    const out: GameboardTileColor[][] = []
+    const out: HighlightColor[][] = []
     for (let y = 0; y < puzzleSync.length; y++) {
-      const row: GameboardTileColor[] = [];
+      const row: HighlightColor[] = [];
       for (let x = 0; x < puzzleSync[0].length; x++) {
         row.push(getColor(predictionMap[x][y], puzzleSync[x][y]));
       }
@@ -43,7 +42,7 @@ export default function Gameboard() {
               key={`gameboard_tile_${x}_${y}`}
               x={x}
               y={y}
-              neighbors={getNeighbors(colorMap, [x, y], getColor(predictionMap[x][y], solution))}
+              neighbors={getNeighbors(colorMap, [x, y])}
               color={getColor(predictionMap[x][y], solution)}
               solution={solution}
             />

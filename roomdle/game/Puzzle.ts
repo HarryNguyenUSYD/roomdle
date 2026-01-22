@@ -1,6 +1,6 @@
-import { GAMEBOARD_WIDTH, GAMEBOARD_HEIGHT, NUM_PIECES_PER_PUZZLE } from "./constants";
-import { FURNITURE_ORIENTATIONS, Orientation } from "./orientation";
-import { getSeedFromToday, mulberry32 } from "./utils";
+import { GAMEBOARD_WIDTH, GAMEBOARD_HEIGHT, NUM_PIECES_PER_PUZZLE, FURNITURE_ORIENTATIONS } from "./game.consts";
+import { FurnitureOrientation } from "./game.types";
+import { getSeedFromToday, mulberry32 } from "./game.utils";
 
 type Listener = () => void;
 
@@ -90,7 +90,7 @@ export class Puzzle {
     this._emit();
   }
 
-  private _getPossiblePlacements(piece: Orientation): number[][] {
+  private _getPossiblePlacements(piece: FurnitureOrientation): number[][] {
     const output = [];
     for (let y = 0; y < GAMEBOARD_HEIGHT; y++) {
       for (let x = 0; x < GAMEBOARD_WIDTH; x++) {
@@ -117,7 +117,7 @@ export class Puzzle {
     return output;
   }
 
-  private _setPlacement(piece: Orientation, coord: number[]) {
+  private _setPlacement(piece: FurnitureOrientation, coord: number[]) {
     for (let i = 0; i < piece.positions.length; i++) {
       const pos = piece.positions[i];
 
