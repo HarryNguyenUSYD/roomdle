@@ -51,6 +51,7 @@ export default function GameboardTile({ x, y, neighbors, color, solution }: Game
           height={25}
           className={`absolute w-full h-full pixel-art`}
           alt="Gameboard Highlight Tile"
+          draggable={false}
         />}
         {settingsContext.settings.highContrast && <Image
           src={`/roomdle-highlight/roomdle-highlight${highContrastIcon}.png`}
@@ -58,6 +59,7 @@ export default function GameboardTile({ x, y, neighbors, color, solution }: Game
           height={25}
           className={`absolute w-full h-full pixel-art`}
           alt="Gameboard High Contrast Icon"
+          draggable={false}
         />}
         {
           debugContext.settings.isDebugging &&

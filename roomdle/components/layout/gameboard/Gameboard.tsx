@@ -49,9 +49,10 @@ export default function Gameboard() {
           ))
         ))}
       </div>
-      {DEBUG && <GameboardDebug puzzle={puzzle} />}
+      {DEBUG && <Gameboard.Debug puzzle={puzzle} />}
     </GameboardContext.Provider>
   )
 }
 
 Gameboard.Tile = GameboardTile;
+Gameboard.Debug = GameboardDebug;

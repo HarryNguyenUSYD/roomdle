@@ -51,3 +51,13 @@ Relocated `page.tsx` components to a separate folder, and relocated all contexts
 feat: added sprites for furniture pieces, and reworked the functionality of the `Furniture Bar`
 
 Added sprites of the `Furniture` pieces, and implemented the grid display of the `Furniture Bar`. Additional work to be done on the bar, including adding tiles backdrop (to highlight the grid), size slider, and decorative borders.
+
+## Week 6:
+
+### Commit 1:
+
+feat: added drag functionality for furniture pieces, refactored code relating to furniture pieces and the furniture bar
+
+Added the ability to drag `Furniture` pieces around the screen, but currently they snap back to the original position after dropping.
+
+Relocated `/components/ui/furniture` to `/components/layout/furniture-bar`, with all the imports updated. Added `furniture.context.tsx` for compound component pattern, similar to `Gameboard`.
