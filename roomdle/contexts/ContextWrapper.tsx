@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { DebugContext, DebugSettings } from "./DebugContext";
 import { Settings, SettingsContext } from "./SettingsContext";
+import { DragAndDropContext } from "./DragAndDropContext";
+import { FurnitureOrientation } from "@/game/game.types";
 
 export default function ContextWrapper({ children }: { children?: React.ReactNode }) {
   const [debugSettings, setDebugSettings] = useState<DebugSettings>({
@@ -10,13 +12,18 @@ export default function ContextWrapper({ children }: { children?: React.ReactNod
   });
 
   const [settings, setSettings] = useState<Settings>({
-    highContrast: true
+    highContrast: true,
+    grabAtCenter: false,
   });
+
+  const [draggedFurniture, setDraggedFurniture] = useState<FurnitureOrientation | null>(null);
 
   return (
     <DebugContext.Provider value={{settings: debugSettings, setSettings: setDebugSettings}}>
       <SettingsContext.Provider value={{settings: settings, setSettings: setSettings}}>
-        {children}
+        <DragAndDropContext.Provider value={{ draggedFurniture: draggedFurniture, setDraggedFurniture: setDraggedFurniture }}>
+          {children}
+        </DragAndDropContext.Provider>
       </SettingsContext.Provider>
     </DebugContext.Provider>
   )

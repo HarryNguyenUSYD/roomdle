@@ -1,8 +1,14 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, Dispatch, SetStateAction, useContext } from "react";
+import { TileCoordinates } from "./gameboard.types";
 
-export const GameboardContext = createContext<boolean | null>(null);
+type GameboardContextType = {
+  hoveredTile: TileCoordinates | null,
+  setHoveredTile: Dispatch<SetStateAction<TileCoordinates | null>>
+}
+
+export const GameboardContext = createContext<GameboardContextType | null>(null);
 
 export function useGameboardContext() {
   const ctx = useContext(GameboardContext);

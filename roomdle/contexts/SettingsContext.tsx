@@ -3,7 +3,8 @@
 import { createContext, Dispatch, SetStateAction, useContext } from "react";
 
 export type Settings = {
-  highContrast: boolean
+  highContrast: boolean,
+  grabAtCenter: boolean
 }
 
 export type SettingsContextValue = {

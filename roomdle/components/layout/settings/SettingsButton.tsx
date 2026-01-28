@@ -28,6 +28,18 @@ export default function SettingsButton() {
               {settingsContext.settings.highContrast ? "ON" : "OFF"}
             </button>
           </div>
+          <div className="w-full flex flex-row justify-between items-center">
+            <p className="text-md lg:text-2xl">Grab Furniture Pieces at the center:</p>
+            <button
+              className="text-md lg:text-2xl cursor-pointer hover:brightness-75"
+              onClick={() => settingsContext.setSettings(prev => ({
+                ...prev,
+                grabAtCenter: !settingsContext.settings.grabAtCenter
+              }))}
+            >
+              {settingsContext.settings.grabAtCenter ? "ON" : "OFF"}
+            </button>
+          </div>
         </Menu>
       )}
       <MenuButton onClick={handleSetActive}>

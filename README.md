@@ -61,3 +61,11 @@ feat: added drag functionality for furniture pieces, refactored code relating to
 Added the ability to drag `Furniture` pieces around the screen, but currently they snap back to the original position after dropping.
 
 Relocated `/components/ui/furniture` to `/components/layout/furniture-bar`, with all the imports updated. Added `furniture.context.tsx` for compound component pattern, similar to `Gameboard`.
+
+### Commit 2:
+
+feat: added hover highlighting feature: the tiles on the `Gameboard` will be appropriately highlighted when dragging a `Furniture` piece onto them.
+
+Added the ability to hover `Furniture` pieces onto the board, which will highlight the tiles taken over by it. This feature, however, doesn't work on mobile devices currently.
+
+Added the `DragAndDropContext` to store the currently dragged furniture piece and updated `ContextWrapper` accordingly. Updated `GameboardContext` to now store the coordinates of the currently hovered tile.

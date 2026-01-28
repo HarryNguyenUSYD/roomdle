@@ -1,6 +1,6 @@
-import { HighlightColor } from "@/game/game.types";
+import { FurnitureOrientation, HighlightColor } from "@/game/game.types";
 import { EMPTY_TILE, HIGHLIGHT_ORITENTATIONS } from "./gameboard.highlight";
-import { GameboardTileHighlight } from "./gameboard.types";
+import { FurniturePlacement, GameboardTileHighlight, TileCoordinates } from "./gameboard.types";
 
 /**
  * [-1, -1][0, -1][1, -1]
@@ -26,6 +26,56 @@ export function getColor(current: number, solution: number): HighlightColor {
   } else {
     return (current === solution) ? "green" : "yellow";
   }
+}
+
+/**
+ * Return the list of coordinates taken by a furniture piece placed at `pos`. The coordinates may or may not be valid,
+ * and should be checked first with `isValidPlacement()`
+ * @param pos The position to place
+ * @param orientation the orientation of the piece
+ */
+export function getPlacementFromOrientation(pos: TileCoordinates, orientation: FurnitureOrientation): FurniturePlacement {
+  const out = [];
+  for (let i = 0; i < orientation.positions.length; i++) {
+    const offset = orientation.positions[i];
+    out.push([pos.x + offset[0], pos.y + offset[1]]);
+  }
+
+  return out;
+}
+
+/**
+ * Returns `true` if `placement` is valid. Otherwise, return `false`.
+ * @param placement the furniture piece placement
+ * @param map the map
+ * @returns 
+ */
+export function isValidPlacement(placement: FurniturePlacement, map: number[][]) {
+  let out = true;
+
+  for (let i = 0; i < placement.length; i++) {
+    const tile = placement[i];
+    if (
+      tile[0] < 0 ||
+      tile[0] >= map[0].length ||
+      tile[1] < 0 ||
+      tile[1] >= map.length ||
+      map[tile[0]][tile[1]] !== -1
+    ) {
+      out &&= false;
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Returns `true` if a `tile` is in `placement`. Otherwise `false`.
+ * @param tile the tile
+ * @param placement the placement
+ */
+export function isTileInPlacement(tile: TileCoordinates, placement: FurniturePlacement) {
+  return Boolean(placement.find((pTile) => (pTile[0] === tile.x && pTile[1] === tile.y)));
 }
 
 /**
@@ -83,4 +133,9 @@ export function getHighContrastIcon(color: HighlightColor): number {
     default:
       return 32;
   }
+}
+
+export function compareTileCoordinates(c1: TileCoordinates | null, c2: TileCoordinates | null) {
+  if (!c1 || !c2) { return false; }
+  else return (c1.x === c2.x && c1.y === c2.y);
 }

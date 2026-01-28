@@ -4,15 +4,19 @@ import { useGameboardContext } from "./gameboard.context";
 import { useDebugContext } from "@/contexts/DebugContext";
 import { GameboardTileState } from "./gameboard.types";
 import Image from "next/image";
-import { getHighContrastIcon, getHighlightImage } from "./gameboard.utils";
-import { useMemo } from "react";
+import { compareTileCoordinates, getHighContrastIcon, getHighlightImage } from "./gameboard.utils";
+import { useEffect, useMemo, useRef } from "react";
 import { SPECIAL_OFFSET, YELLOW_OFFSET } from "./gameboard.highlight";
 import { useSettingsContext } from "@/contexts/SettingsContext";
+import { useDragAndDropContext } from "@/contexts/DragAndDropContext";
 
-export default function GameboardTile({ x, y, neighbors, color, solution }: GameboardTileState) {
+export default function GameboardTile({ x, y, neighbors, color, solution, dragHovered }: GameboardTileState) {
   const gameboardContext = useGameboardContext();
+  const dragAndDropContext = useDragAndDropContext();
   const debugContext = useDebugContext();
   const settingsContext = useSettingsContext();
+
+  const ref = useRef<HTMLDivElement | null>(null);
   
   const highlightImage = useMemo(() => {
     if (color === "black" || color === "gray") {
@@ -31,10 +35,34 @@ export default function GameboardTile({ x, y, neighbors, color, solution }: Game
 
   const highContrastIcon = useMemo(() => (getHighContrastIcon(color)), [color]);
 
+  useEffect(() => {
+    const el = ref.current;
+    const handleSet = gameboardContext.setHoveredTile;
+    if (!el || !handleSet) return;
+
+    const onEnter = () => {
+      if (dragAndDropContext.draggedFurniture) {
+        handleSet({ x, y });
+      }
+    };
+
+    el.addEventListener("pointerenter", onEnter);
+
+    return () => {
+      el.removeEventListener("pointerenter", onEnter);
+    };
+  }, [dragAndDropContext.draggedFurniture, gameboardContext.setHoveredTile, x, y]);
+
   if (!gameboardContext || !debugContext || !settingsContext) { return null; }
   
   return (
-    <div className="relative w-full h-full hover:brightness-150 duration-100 select-none">
+    <div
+      className="relative w-full h-full hover:brightness-150 duration-100 select-none"
+      ref={ref}
+      style={{
+        border: dragHovered ? "2px solid white" : "none"
+      }}
+    >
       <div
         className={`w-full h-full flex flex-col justify-center items-center`}>
         <Image

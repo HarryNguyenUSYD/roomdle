@@ -8,26 +8,36 @@ import { motion, useAnimation, useMotionValueEvent } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useFurnitureContext } from "./furniture.context";
+import { useSettingsContext } from "@/contexts/SettingsContext";
+import { useDragAndDropContext } from "@/contexts/DragAndDropContext";
+
+type Point = { x: number; y: number }
+type Size = { width: number, height: number }
 
 type FurnitureProps = {
   orientation: FurnitureOrientation,
   color: HighlightColor
 }
 
-type Point = { x: number; y: number }
-type Size = { width: number, height: number }
-
 export default function Furniture({ orientation, color } : FurnitureProps) {
   const furnitureContext = useFurnitureContext();
+  const settingsContext = useSettingsContext();
+  const dragAndDropContext = useDragAndDropContext();
   
   const [dragging, setDragging] = useState(false);
   const [point, setPoint] = useState<Point | null>(null);
+
+  // The position the furniture piece return to after being dropped
   const [homePoint, setHomePoint] = useState<Point | null>(null);
+
   const [renderedSize, setRenderedSize] = useState<Size | null>(null);
 
   const ref = useRef<HTMLDivElement | null>(null);
   const controls = useAnimation();
 
+  /**
+   * Update the home point when the FurnitureBar is scrolled
+   */
   useMotionValueEvent(furnitureContext.scrollY, "change", () => {
     const rect = ref.current?.getBoundingClientRect();
 
@@ -39,6 +49,9 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
     }
   });
 
+  /**
+   * Initialise the home point
+   */
   useEffect(() => {
     const rect = ref.current?.getBoundingClientRect();
 
@@ -51,6 +64,9 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
     }
   }, [furnitureContext.scrollY]);
 
+  /**
+   * Update the furniture ghost piece when the screen gets resized
+   */
   useEffect(() => {
     if (!ref.current) return;
 
@@ -68,7 +84,7 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
     return () => observer.disconnect();
   }, []);
 
-  if (!furnitureContext) { return null; }
+  if (!furnitureContext || !dragAndDropContext) { return null; }
 
   return (
     <>
@@ -85,16 +101,23 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
         animate={controls}
         onDragStart={() => {
           setDragging(true);
+          dragAndDropContext.setDraggedFurniture(orientation);
           controls.start({
-            opacity: 0,
+            opacity: 0.25,
             transition: { duration: 0 }
           });
         }}
         onDrag={(_, info) => {
-          setPoint(info.point)
+          setPoint(info.point);
+          controls.start({
+            x: 0,
+            y: 0,
+            transition: { duration: 0 }
+          });
         }}
         onDragEnd={() => {
           setDragging(false);
+          dragAndDropContext.setDraggedFurniture(null);
           controls.start({
             x: 0,
             y: 0,
@@ -120,15 +143,20 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
         <motion.div
           className="fixed z-9999 pointer-events-none"
           style={{
-            // center under pointer (change if you want top-left anchoring)
             width: renderedSize.width,
             height: renderedSize.height,
           }}
           animate={dragging ? "onDrag" : "onDragEnd"}
           variants={{
             onDrag: {
-              left: Math.round(point.x) - renderedSize.width / 4,
-              top: Math.round(point.y) - renderedSize.height / 4,
+              left: (settingsContext.settings.grabAtCenter ?
+                Math.round(point.x) - renderedSize.width / 2 :
+                Math.round(point.x) - renderedSize.width / (orientation.width * 2)
+              ),
+              top: (settingsContext.settings.grabAtCenter ?
+                Math.round(point.y) - renderedSize.height / 2 :
+                Math.round(point.y) - renderedSize.height / (orientation.height * 2)
+              ),
               opacity: 1,
               transition: { duration: 0 }
             },
