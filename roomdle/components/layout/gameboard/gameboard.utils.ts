@@ -1,6 +1,7 @@
 import { FurnitureOrientation, HighlightColor } from "@/game/game.types";
-import { EMPTY_TILE, HIGHLIGHT_ORITENTATIONS } from "./gameboard.highlight";
+import { EMPTY_TILE, HIGHLIGHT_ORITENTATIONS, SPECIAL_OFFSET, YELLOW_OFFSET } from "./gameboard.highlight";
 import { FurniturePlacement, GameboardTileHighlight, TileCoordinates } from "./gameboard.types";
+import { GAMEBOARD_HEIGHT, GAMEBOARD_WIDTH } from "@/game/game.consts";
 
 /**
  * [-1, -1][0, -1][1, -1]
@@ -17,16 +18,6 @@ export const DIRECTIONS = [
   [-1, 1],
   [1, 1]
 ] as const;
-
-export function getColor(current: number, solution: number): HighlightColor {
-  if (current === -1) {
-    return "gray";
-  } else if (solution === -1) {
-    return "black";
-  } else {
-    return (current === solution) ? "green" : "yellow";
-  }
-}
 
 /**
  * Return the list of coordinates taken by a furniture piece placed at `pos`. The coordinates may or may not be valid,
@@ -103,7 +94,7 @@ export function getNeighbors(map: HighlightColor[][], pos: number[]) {
   return out;
 }
 
-export function getHighlightImage(neighbors: number): GameboardTileHighlight {
+export function getHighlightFromNeighbors(neighbors: number): GameboardTileHighlight {
   const cardinal = (neighbors >> 4) & 0b1111;
   const diagonal = (neighbors >> 0) & 0b1111;
 
@@ -122,6 +113,21 @@ export function getHighlightImage(neighbors: number): GameboardTileHighlight {
   return { index: EMPTY_TILE, rotation: "0" }
 }
 
+export function getHighlightWithColor(color: HighlightColor, neighbors: number): GameboardTileHighlight | null {
+  if (color === "black" || color === "gray") {
+    return null;
+  }
+  
+  const highlight = getHighlightFromNeighbors(neighbors);
+  if (highlight.index >= SPECIAL_OFFSET || color === "green") {
+    return { index: highlight.index, rotation: highlight.rotation };
+  } else if (color === "yellow") {
+    return { index: highlight.index + YELLOW_OFFSET, rotation: highlight.rotation }
+  } else {
+    return null;
+  }
+}
+
 export function getHighContrastIcon(color: HighlightColor): number {
   switch (color) {
     case "black":
@@ -138,4 +144,13 @@ export function getHighContrastIcon(color: HighlightColor): number {
 export function compareTileCoordinates(c1: TileCoordinates | null, c2: TileCoordinates | null) {
   if (!c1 || !c2) { return false; }
   else return (c1.x === c2.x && c1.y === c2.y);
+}
+
+export function getTileFromPointer(event: PointerEvent, rect: DOMRect): TileCoordinates | null {
+  if (event.clientX - rect.left < 0 || event.clientY - rect.top < 0) { return null; }
+
+  const x = Math.floor((event.clientX - rect.left) / (rect.width / GAMEBOARD_WIDTH));
+  const y = Math.floor((event.clientY - rect.top) / (rect.height / GAMEBOARD_HEIGHT));
+  
+  return { x, y }
 }

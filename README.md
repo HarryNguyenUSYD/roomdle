@@ -69,3 +69,15 @@ feat: added hover highlighting feature: the tiles on the `Gameboard` will be app
 Added the ability to hover `Furniture` pieces onto the board, which will highlight the tiles taken over by it. This feature, however, doesn't work on mobile devices currently.
 
 Added the `DragAndDropContext` to store the currently dragged furniture piece and updated `ContextWrapper` accordingly. Updated `GameboardContext` to now store the coordinates of the currently hovered tile.
+
+## Week 7:
+
+### Commit 1:
+
+feat: reworked the ability to hover dragged pieces. Now work on both mobile and desktop.
+
+Reworked the ability to hover `Furniture` pieces onto the board as mentioned in the previous commit. Now it works on both mobile and desktop devices.
+
+Added Zustand into the project, created the `/components/store` directory for all Zustand storage files. Removed `/components/contexts` and all related files to be replaced by Zustand.
+
+Reverted the previous relocation of `<HomeDesktop>` and `<HomeMobile>` to separate files. Now these components are both located in `page.tsx`.

@@ -8,8 +8,8 @@ import { motion, useAnimation, useMotionValueEvent } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useFurnitureContext } from "./furniture.context";
-import { useSettingsContext } from "@/contexts/SettingsContext";
-import { useDragAndDropContext } from "@/contexts/DragAndDropContext";
+import { useDragAndDropStore } from "@/store/useDragAndDropStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 type Point = { x: number; y: number }
 type Size = { width: number, height: number }
@@ -21,18 +21,20 @@ type FurnitureProps = {
 
 export default function Furniture({ orientation, color } : FurnitureProps) {
   const furnitureContext = useFurnitureContext();
-  const settingsContext = useSettingsContext();
-  const dragAndDropContext = useDragAndDropContext();
+
+  const grabAtCenter = useSettingsStore((s) => s.grabAtCenter);
   
   const [dragging, setDragging] = useState(false);
   const [point, setPoint] = useState<Point | null>(null);
+
+  const setDraggingFurniture = useDragAndDropStore((s) => s.setDraggingFurniture);
 
   // The position the furniture piece return to after being dropped
   const [homePoint, setHomePoint] = useState<Point | null>(null);
 
   const [renderedSize, setRenderedSize] = useState<Size | null>(null);
 
-  const ref = useRef<HTMLDivElement | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
 
   /**
@@ -84,7 +86,7 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
     return () => observer.disconnect();
   }, []);
 
-  if (!furnitureContext || !dragAndDropContext) { return null; }
+  if (!furnitureContext) { return null; }
 
   return (
     <>
@@ -101,7 +103,7 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
         animate={controls}
         onDragStart={() => {
           setDragging(true);
-          dragAndDropContext.setDraggedFurniture(orientation);
+          setDraggingFurniture(orientation);
           controls.start({
             opacity: 0.25,
             transition: { duration: 0 }
@@ -117,7 +119,7 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
         }}
         onDragEnd={() => {
           setDragging(false);
-          dragAndDropContext.setDraggedFurniture(null);
+          setDraggingFurniture(null);
           controls.start({
             x: 0,
             y: 0,
@@ -149,15 +151,15 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
           animate={dragging ? "onDrag" : "onDragEnd"}
           variants={{
             onDrag: {
-              left: (settingsContext.settings.grabAtCenter ?
+              left: (grabAtCenter ?
                 Math.round(point.x) - renderedSize.width / 2 :
                 Math.round(point.x) - renderedSize.width / (orientation.width * 2)
               ),
-              top: (settingsContext.settings.grabAtCenter ?
+              top: (grabAtCenter ?
                 Math.round(point.y) - renderedSize.height / 2 :
                 Math.round(point.y) - renderedSize.height / (orientation.height * 2)
               ),
-              opacity: 1,
+              opacity: 0.75,
               transition: { duration: 0 }
             },
             onDragEnd: {

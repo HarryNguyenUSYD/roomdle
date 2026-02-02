@@ -4,31 +4,40 @@ import { useGameboardContext } from "./gameboard.context";
 import Menu from "@/components/ui/menu/Menu";
 import MenuButton from "@/components/ui/menu/MenuButton";
 import useMenu from "@/hooks/useMenu";
-import { useDebugContext } from "@/contexts/DebugContext";
 import { Puzzle } from "@/game/Puzzle";
 import { useEffect } from "react";
+import { useDebugStore } from "@/store/useDebugStore";
 
 type GameboardDebugProps = { puzzle: Puzzle }
 
 export default function GameboardDebug({ puzzle }: GameboardDebugProps) {
   const gameboardContext = useGameboardContext();
-  const debugContext = useDebugContext();
-  
+
+  const {
+    isDebugging,
+    isShowingCoordinates,
+    isShowingSolution,
+    
+    setIsDebugging,
+    setIsShowingCoordinates,
+    setIsShowingSolution
+  } = useDebugStore();  
+
   const { isActive, handleSetInactive, handleSetActive } = useMenu();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       e.preventDefault();
-      if (debugContext.settings.isDebugging && e.key === " ") {
+      if (isDebugging && e.key === " ") {
         puzzle.generateRandomPuzzle();
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [debugContext.settings.isDebugging, puzzle]);
+  }, [isDebugging, puzzle]);
 
-  if (!gameboardContext || !debugContext) { return null; }
+  if (!gameboardContext) { return null; }
 
   return (
     <>
@@ -40,12 +49,9 @@ export default function GameboardDebug({ puzzle }: GameboardDebugProps) {
             <p className="text-md lg:text-2xl">Debug Enabled:</p>
             <button
               className="text-md lg:text-2xl cursor-pointer hover:brightness-75"
-              onClick={() => debugContext.setSettings(prev => ({
-                ...prev,
-                isDebugging: !debugContext.settings.isDebugging
-              }))}
+              onClick={() => setIsDebugging(!isDebugging)}
             >
-              {debugContext.settings.isDebugging ? "ON" : "OFF"}
+              {isDebugging ? "ON" : "OFF"}
             </button>
           </div>
           <div className="w-[50%] border border-white"></div>
@@ -53,24 +59,18 @@ export default function GameboardDebug({ puzzle }: GameboardDebugProps) {
             <p className="text-md lg:text-2xl">Show Coordinates:</p>
             <button
               className="text-md lg:text-2xl cursor-pointer hover:brightness-75"
-              onClick={() => debugContext.setSettings(prev => ({
-                ...prev,
-                isShowingCoordinates: !debugContext.settings.isShowingCoordinates
-              }))}
+              onClick={() => setIsShowingCoordinates(!isShowingCoordinates)}
             >
-              {debugContext.settings.isShowingCoordinates ? "ON" : "OFF"}
+              {isShowingCoordinates ? "ON" : "OFF"}
             </button>
           </div>
           <div className="w-full flex flex-row justify-between items-center">
             <p className="text-md lg:text-2xl">Show Solution:</p>
             <button
               className="text-md lg:text-2xl cursor-pointer hover:brightness-75"
-              onClick={() => debugContext.setSettings(prev => ({
-                ...prev,
-                isShowingSolution: !debugContext.settings.isShowingSolution
-              }))}
+              onClick={() => setIsShowingSolution(!isShowingSolution)}
             >
-              {debugContext.settings.isShowingSolution ? "ON" : "OFF"}
+              {isShowingSolution ? "ON" : "OFF"}
             </button>
           </div>
           <button

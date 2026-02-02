@@ -2,7 +2,7 @@
 
 import Furniture from "@/components/layout/furniture-bar/Furniture";
 import { FURNITURE_ORIENTATIONS } from "@/game/game.consts";
-import { useMotionValueEvent, useScroll } from "motion/react";
+import { useScroll } from "motion/react";
 import { useRef, useState } from "react";
 import { FurnitureContext } from "./furniture.context";
 
@@ -21,7 +21,7 @@ export default function FurnitureBar() {
 }
 
 function FurnitureBarDesktop() {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({
     container: ref,
   });
@@ -46,7 +46,7 @@ function FurnitureBarDesktop() {
 function FurnitureBarMobile() {
   const [isActive, setIsActive] = useState(false);
   const { scrollY } = useScroll();
-
+    
   return (
     <FurnitureContext.Provider value={{ scrollY: scrollY }}>
       <div
@@ -64,9 +64,9 @@ function FurnitureBarMobile() {
             <div className="relative w-full h-auto grid grid-cols-5 grid-flow-row-dense z-10">
               {FURNITURE_ORIENTATIONS.map((orientation, i) => (
                 <Furniture
-                key={`furniture_${i}`}
-                orientation={orientation}
-                color="gray"
+                  key={`furniture_${i}`}
+                  orientation={orientation}
+                  color="gray"
                 />
               ))}
             </div>

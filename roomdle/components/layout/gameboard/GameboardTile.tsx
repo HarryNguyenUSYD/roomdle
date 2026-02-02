@@ -1,67 +1,35 @@
 "use client";
 
 import { useGameboardContext } from "./gameboard.context";
-import { useDebugContext } from "@/contexts/DebugContext";
 import { GameboardTileState } from "./gameboard.types";
 import Image from "next/image";
-import { compareTileCoordinates, getHighContrastIcon, getHighlightImage } from "./gameboard.utils";
-import { useEffect, useMemo, useRef } from "react";
-import { SPECIAL_OFFSET, YELLOW_OFFSET } from "./gameboard.highlight";
-import { useSettingsContext } from "@/contexts/SettingsContext";
-import { useDragAndDropContext } from "@/contexts/DragAndDropContext";
+import { getHighContrastIcon, getHighlightWithColor } from "./gameboard.utils";
+import { useMemo, useRef } from "react";
+import { useDebugStore } from "@/store/useDebugStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 export default function GameboardTile({ x, y, neighbors, color, solution, dragHovered }: GameboardTileState) {
   const gameboardContext = useGameboardContext();
-  const dragAndDropContext = useDragAndDropContext();
-  const debugContext = useDebugContext();
-  const settingsContext = useSettingsContext();
 
-  const ref = useRef<HTMLDivElement | null>(null);
+  const {
+    isDebugging,
+    isShowingCoordinates,
+    isShowingSolution
+  } = useDebugStore();
+
+  const highContrast = useSettingsStore((s) => s.highContrast);
+
+  const ref = useRef<HTMLDivElement>(null);
   
-  const highlightImage = useMemo(() => {
-    if (color === "black" || color === "gray") {
-      return null;
-    }
-    
-    const highlight = getHighlightImage(neighbors);
-    if (highlight.index >= SPECIAL_OFFSET) {
-      return { index: highlight.index, rotation: highlight.rotation };
-    } else if (color === "green") {
-      return { index: highlight.index, rotation: highlight.rotation };
-    } else if (color === "yellow") {
-      return { index: highlight.index + YELLOW_OFFSET, rotation: highlight.rotation }
-    }
-  }, [color, neighbors]);
-
+  const highlightImage = useMemo(() => (getHighlightWithColor(color, neighbors)), [color, neighbors]);
   const highContrastIcon = useMemo(() => (getHighContrastIcon(color)), [color]);
 
-  useEffect(() => {
-    const el = ref.current;
-    const handleSet = gameboardContext.setHoveredTile;
-    if (!el || !handleSet) return;
-
-    const onEnter = () => {
-      if (dragAndDropContext.draggedFurniture) {
-        handleSet({ x, y });
-      }
-    };
-
-    el.addEventListener("pointerenter", onEnter);
-
-    return () => {
-      el.removeEventListener("pointerenter", onEnter);
-    };
-  }, [dragAndDropContext.draggedFurniture, gameboardContext.setHoveredTile, x, y]);
-
-  if (!gameboardContext || !debugContext || !settingsContext) { return null; }
+  if (!gameboardContext) { return null; }
   
   return (
     <div
-      className="relative w-full h-full hover:brightness-150 duration-100 select-none"
+      className={`relative w-full h-full duration-100 select-none ${dragHovered ? "brightness-500" : "hover:brightness-150"}`}
       ref={ref}
-      style={{
-        border: dragHovered ? "2px solid white" : "none"
-      }}
     >
       <div
         className={`w-full h-full flex flex-col justify-center items-center`}>
@@ -81,7 +49,7 @@ export default function GameboardTile({ x, y, neighbors, color, solution, dragHo
           alt="Gameboard Highlight Tile"
           draggable={false}
         />}
-        {settingsContext.settings.highContrast && <Image
+        {highContrast && <Image
           src={`/roomdle-highlight/roomdle-highlight${highContrastIcon}.png`}
           width={25}
           height={25}
@@ -90,13 +58,13 @@ export default function GameboardTile({ x, y, neighbors, color, solution, dragHo
           draggable={false}
         />}
         {
-          debugContext.settings.isDebugging &&
-          debugContext.settings.isShowingCoordinates &&
+          isDebugging &&
+          isShowingCoordinates &&
           <p className="text-xl text-black text-center z-10">{`(${x}, ${y})`}</p>
         }
         {
-          debugContext.settings.isDebugging &&
-          debugContext.settings.isShowingSolution &&
+          isDebugging &&
+          isShowingSolution &&
           <p className="text-xl text-black text-center z-10">{`(${solution})`}</p>
         }
       </div>

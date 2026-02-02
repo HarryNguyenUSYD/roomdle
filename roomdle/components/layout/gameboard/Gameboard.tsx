@@ -6,72 +6,75 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { Puzzle } from "@/game/Puzzle";
 import { DEBUG } from "./gameboard.constants";
 import GameboardDebug from "./GameboardDebug";
-import { getColor, getNeighbors, getPlacementFromOrientation, isTileInPlacement, isValidPlacement } from "./gameboard.utils";
-import { HighlightColor } from "@/game/game.types";
+import { compareTileCoordinates, getNeighbors, getPlacementFromOrientation, getTileFromPointer, isTileInPlacement, isValidPlacement } from "./gameboard.utils";
 import { FurniturePlacement, TileCoordinates } from "./gameboard.types";
-import { useDragAndDropContext } from "@/contexts/DragAndDropContext";
+import { useBoardStateStore } from "@/store/useBoardStateStore";
+import { useDragAndDropStore } from "@/store/useDragAndDropStore";
 
 export default function Gameboard() {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const puzzle = useMemo(() => new Puzzle(), []);
   const puzzleSync = useSyncExternalStore((l) => puzzle.subscribe(l), () => puzzle.getSnapshot(), () => puzzle.getSnapshot());
-  const dragAndDropContext = useDragAndDropContext();
   
-  const [predictionTileMap, setPredictionTileMap] = useState<number[][]>(Array.from({ length: puzzleSync.length }, () =>
-    Array.from({ length: puzzleSync[0].length }, () => (15))
-  ));
+  const tileColorMap = useBoardStateStore((s) => s.tileColorMap);
+  const placementMap = useBoardStateStore((s) => s.placementMap);
 
-  const [currentPredictionMap, setCurrentPredictionMap] = useState<number[][]>(Array.from({ length: puzzleSync.length }, () =>
-    Array.from({ length: puzzleSync[0].length }, () => (-1))
-  ));
+  const updateTileColorMap = useBoardStateStore((s) => s.updateTileColorMap);
 
-  const colorMap = useMemo(() => {
-    const out: HighlightColor[][] = []
-    for (let y = 0; y < puzzleSync.length; y++) {
-      const row: HighlightColor[] = [];
-      for (let x = 0; x < puzzleSync[0].length; x++) {
-        row.push(getColor(predictionTileMap[x][y], puzzleSync[x][y]));
-      }
+  const draggingFurniture = useDragAndDropStore((s) => (s.draggingFurniture));
 
-      out.push(row);
-    }
-
-    return out;
-  }, [predictionTileMap, puzzleSync]);
+  useEffect(() => {
+    updateTileColorMap(placementMap, puzzleSync);
+  }, [placementMap, puzzleSync, updateTileColorMap]);
   
+  // Drag and Drop support
+  const hoveredTileRef = useRef<TileCoordinates | null>(null)
   const [hoveredTile, setHoveredTile] = useState<TileCoordinates | null>(null);
 
   const hoveredPlacement: FurniturePlacement | null = useMemo(() => {
-    if (hoveredTile && dragAndDropContext.draggedFurniture) {
-      const placement = getPlacementFromOrientation(hoveredTile, dragAndDropContext.draggedFurniture)
-      if (isValidPlacement(placement, currentPredictionMap)) {
+    if (hoveredTile && draggingFurniture) {
+      const placement = getPlacementFromOrientation(hoveredTile, draggingFurniture)
+      if (isValidPlacement(placement, placementMap)) {
         return placement;
       }
     }
 
     return null;
-  }, [dragAndDropContext.draggedFurniture, hoveredTile, currentPredictionMap]);
+  }, [draggingFurniture, hoveredTile, placementMap]);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const updateHover = () => {
+      if (!draggingFurniture) {
+        setHoveredTile(null);
+      } else {
+        setHoveredTile(prev => (!compareTileCoordinates(prev, hoveredTileRef.current) ? hoveredTileRef.current : prev));
+      }
+      
+      requestAnimationFrame(updateHover);
+    }
 
-    const onExit = () => {
-      setHoveredTile(null);
+    requestAnimationFrame(updateHover);
+  }, [draggingFurniture]);
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (draggingFurniture && ref.current) {
+        hoveredTileRef.current = getTileFromPointer(e, ref.current.getBoundingClientRect());
+      }
     };
-
-    el.addEventListener("pointerleave", onExit);
-
+        
+    window.addEventListener("pointermove", onMove);
+    
     return () => {
-      el.removeEventListener("pointerleave", onExit);
+      window.removeEventListener("pointermove", onMove);
     };
-  }, []);
-  
+  }, [draggingFurniture]);
+
   return (
-    <GameboardContext.Provider value={{ hoveredTile, setHoveredTile }}>
+    <GameboardContext.Provider value={true}>
       <div
         ref={ref}
-        className={`relative size-[80vw] lg:size-[50vh] flex-none grid`}
+        className={`relative size-[80vw] lg:size-[50vh] flex-none grid touch-none`}
         style={{ gridTemplateColumns: `repeat(${puzzleSync.length}, minmax(0, 1fr))` }}
       >
         {puzzleSync.map((rows, y) => (
@@ -80,8 +83,8 @@ export default function Gameboard() {
               key={`gameboard_tile_${x}_${y}`}
               x={x}
               y={y}
-              neighbors={getNeighbors(colorMap, [x, y])}
-              color={getColor(predictionTileMap[x][y], solution)}
+              neighbors={getNeighbors(tileColorMap, [x, y])}
+              color={tileColorMap[x][y]}
               solution={solution}
               dragHovered={hoveredPlacement ? isTileInPlacement({ x, y }, hoveredPlacement) : false}
             />

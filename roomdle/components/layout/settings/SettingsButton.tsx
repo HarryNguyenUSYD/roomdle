@@ -2,13 +2,19 @@
 
 import Menu from "@/components/ui/menu/Menu";
 import MenuButton from "@/components/ui/menu/MenuButton";
-import { useSettingsContext } from "@/contexts/SettingsContext";
 import useMenu from "@/hooks/useMenu";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 export default function SettingsButton() {
   const { isActive, handleSetInactive, handleSetActive } = useMenu();
 
-  const settingsContext = useSettingsContext();
+  const {
+    highContrast,
+    grabAtCenter,
+
+    setHighContrast,
+    setGrabAtCenter
+  } = useSettingsStore();
 
   return (
     <>
@@ -20,24 +26,18 @@ export default function SettingsButton() {
             <p className="text-md lg:text-2xl">High Contrast:</p>
             <button
               className="text-md lg:text-2xl cursor-pointer hover:brightness-75"
-              onClick={() => settingsContext.setSettings(prev => ({
-                ...prev,
-                highContrast: !settingsContext.settings.highContrast
-              }))}
+              onClick={() => setHighContrast(!highContrast)}
             >
-              {settingsContext.settings.highContrast ? "ON" : "OFF"}
+              {highContrast ? "ON" : "OFF"}
             </button>
           </div>
           <div className="w-full flex flex-row justify-between items-center">
-            <p className="text-md lg:text-2xl">Grab Furniture Pieces at the center:</p>
+            <p className="text-md lg:text-2xl">Grab Furniture:</p>
             <button
               className="text-md lg:text-2xl cursor-pointer hover:brightness-75"
-              onClick={() => settingsContext.setSettings(prev => ({
-                ...prev,
-                grabAtCenter: !settingsContext.settings.grabAtCenter
-              }))}
+              onClick={() => setGrabAtCenter(!grabAtCenter)}
             >
-              {settingsContext.settings.grabAtCenter ? "ON" : "OFF"}
+              {grabAtCenter ? "CENTER" : "CORNER"}
             </button>
           </div>
         </Menu>

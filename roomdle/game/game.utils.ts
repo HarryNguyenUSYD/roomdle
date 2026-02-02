@@ -1,3 +1,5 @@
+import { HighlightColor } from "./game.types";
+
 /**
  * Generate a seed from today's date.
  * @returns a seed as a number
@@ -24,5 +26,24 @@ export function mulberry32(seed: number): () => number {
     t = Math.imul(t ^ t >>> 15, t | 1);
     t ^= t + Math.imul(t ^ t >>> 7, t | 61);
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+
+export function getPriorityColor(oldColor: HighlightColor, newColor: HighlightColor): HighlightColor {
+  const heirarchy: HighlightColor[] = ["gray", "yellow", "green", "black"];
+
+  const oldIndex = heirarchy.findIndex((c) => (oldColor === c));
+  const newIndex = heirarchy.findIndex((c) => (newColor === c));
+
+  return newIndex > oldIndex ? newColor : oldColor;
+}
+
+export function getColor(current: number, solution: number): HighlightColor {
+  if (current === -1) {
+    return "gray";
+  } else if (solution === -1) {
+    return "black";
+  } else {
+    return (current === solution) ? "green" : "yellow";
   }
 }
