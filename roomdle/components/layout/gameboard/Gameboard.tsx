@@ -7,60 +7,69 @@ import { Puzzle } from "@/game/Puzzle";
 import { DEBUG } from "./gameboard.constants";
 import GameboardDebug from "./GameboardDebug";
 import { compareTileCoordinates, getNeighbors, getPlacementFromOrientation, getTileFromPointer, isTileInPlacement, isValidPlacement } from "./gameboard.utils";
-import { FurniturePlacement, TileCoordinates } from "./gameboard.types";
-import { useBoardStateStore } from "@/store/useBoardStateStore";
+import { useGameStateStore } from "@/store/useGameStateStore";
 import { useDragAndDropStore } from "@/store/useDragAndDropStore";
+import { useBoardRectStore } from "@/store/useBoardRectStore";
+import { TileCoordinates } from "@/game/game.types";
 
 export default function Gameboard() {
   const ref = useRef<HTMLDivElement>(null);
   const puzzle = useMemo(() => new Puzzle(), []);
   const puzzleSync = useSyncExternalStore((l) => puzzle.subscribe(l), () => puzzle.getSnapshot(), () => puzzle.getSnapshot());
-  
-  const tileColorMap = useBoardStateStore((s) => s.tileColorMap);
-  const placementMap = useBoardStateStore((s) => s.placementMap);
 
-  const updateTileColorMap = useBoardStateStore((s) => s.updateTileColorMap);
+  const {
+    isDragging,
+    draggingFurniture,
+  } = useDragAndDropStore();
 
-  const draggingFurniture = useDragAndDropStore((s) => (s.draggingFurniture));
+  const {
+    tileColorMap,
+    furniturePlacementMap,
+    furnitureTileMap,
+    updateTileColorMap,
+    addFurniture,
+    removeFurniture,
+  } = useGameStateStore();
 
   useEffect(() => {
-    updateTileColorMap(placementMap, puzzleSync);
-  }, [placementMap, puzzleSync, updateTileColorMap]);
+    updateTileColorMap(puzzleSync);
+  }, [puzzleSync, updateTileColorMap]);
   
   // Drag and Drop support
-  const hoveredTileRef = useRef<TileCoordinates | null>(null)
-  const [hoveredTile, setHoveredTile] = useState<TileCoordinates | null>(null);
-
-  const hoveredPlacement: FurniturePlacement | null = useMemo(() => {
-    if (hoveredTile && draggingFurniture) {
-      const placement = getPlacementFromOrientation(hoveredTile, draggingFurniture)
-      if (isValidPlacement(placement, placementMap)) {
-        return placement;
-      }
-    }
-
-    return null;
-  }, [draggingFurniture, hoveredTile, placementMap]);
+  const [originTile, setOriginTiles] = useState<TileCoordinates | null>(null);
+  const [hoveredTiles, setHoveredTiles] = useState<TileCoordinates[] | null>(null);
 
   useEffect(() => {
-    const updateHover = () => {
-      if (!draggingFurniture) {
-        setHoveredTile(null);
-      } else {
-        setHoveredTile(prev => (!compareTileCoordinates(prev, hoveredTileRef.current) ? hoveredTileRef.current : prev));
+    if (originTile && draggingFurniture) {
+      const placement = getPlacementFromOrientation(originTile, draggingFurniture)
+      if (isValidPlacement(placement, furnitureTileMap)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setHoveredTiles(placement);
       }
-      
-      requestAnimationFrame(updateHover);
+    } else {
+      setHoveredTiles(null);
     }
+  }, [originTile, draggingFurniture, furnitureTileMap]);
 
-    requestAnimationFrame(updateHover);
-  }, [draggingFurniture]);
+  useEffect(() => {
+    if (!isDragging && draggingFurniture && originTile && hoveredTiles) {
+      addFurniture({ id: draggingFurniture.id, origin: originTile }, hoveredTiles);
+    }
+  }, [addFurniture, draggingFurniture, hoveredTiles, isDragging, originTile]);
 
+  /**
+   * Updating the hovered tile every animation frame for hovering effect
+   */
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
-      if (draggingFurniture && ref.current) {
-        hoveredTileRef.current = getTileFromPointer(e, ref.current.getBoundingClientRect());
-      }
+      requestAnimationFrame(() => {
+        if (!isDragging || !ref.current) {
+          setOriginTiles(null);
+        } else {
+          const tile = getTileFromPointer(e, ref.current.getBoundingClientRect());
+          setOriginTiles(prev => (!compareTileCoordinates(prev, tile) ? tile : prev));
+        }
+      })
     };
         
     window.addEventListener("pointermove", onMove);
@@ -68,7 +77,34 @@ export default function Gameboard() {
     return () => {
       window.removeEventListener("pointermove", onMove);
     };
-  }, [draggingFurniture]);
+  }, [isDragging]);
+
+  /**
+   * Update the rect of the board when the screen gets resized
+   */
+  const setRect = useBoardRectStore((s) => s.setRect);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const update = () => {
+      requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect();
+        if (rect.width !== 0 || rect.height !== 0) {
+          setRect(rect);
+        }
+      });
+    };
+
+    window.addEventListener("resize", update);
+
+    update();
+    
+    return () => {
+      window.removeEventListener("resize", update);
+    }
+  }, [setRect]);
 
   return (
     <GameboardContext.Provider value={true}>
@@ -86,7 +122,8 @@ export default function Gameboard() {
               neighbors={getNeighbors(tileColorMap, [x, y])}
               color={tileColorMap[x][y]}
               solution={solution}
-              dragHovered={hoveredPlacement ? isTileInPlacement({ x, y }, hoveredPlacement) : false}
+              predictionId={furnitureTileMap[x][y]}
+              dragHovered={hoveredTiles ? isTileInPlacement({ x, y }, hoveredTiles) : false}
             />
           ))
         ))}

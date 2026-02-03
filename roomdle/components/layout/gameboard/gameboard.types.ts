@@ -6,6 +6,7 @@ export type GameboardTileState = {
   color: HighlightColor,
   neighbors: number,
   solution: number,
+  predictionId: number,
   dragHovered: boolean
 }
 
@@ -13,10 +14,3 @@ export type GameboardTileHighlight = {
   index: number,
   rotation: "0" | "90" | "180" | "270"
 }
-
-export type TileCoordinates = {
-  x: number,
-  y: number
-}
-
-export type FurniturePlacement = number[][];

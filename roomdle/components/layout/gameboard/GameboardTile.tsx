@@ -8,13 +8,14 @@ import { useMemo, useRef } from "react";
 import { useDebugStore } from "@/store/useDebugStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 
-export default function GameboardTile({ x, y, neighbors, color, solution, dragHovered }: GameboardTileState) {
+export default function GameboardTile({ x, y, neighbors, color, solution, predictionId, dragHovered }: GameboardTileState) {
   const gameboardContext = useGameboardContext();
 
   const {
     isDebugging,
     isShowingCoordinates,
-    isShowingSolution
+    isShowingSolution,
+    isShowingPrediction
   } = useDebugStore();
 
   const highContrast = useSettingsStore((s) => s.highContrast);
@@ -66,6 +67,11 @@ export default function GameboardTile({ x, y, neighbors, color, solution, dragHo
           isDebugging &&
           isShowingSolution &&
           <p className="text-xl text-black text-center z-10">{`(${solution})`}</p>
+        }
+        {
+          isDebugging &&
+          isShowingPrediction &&
+          <p className="text-xl text-black text-center z-10">{`(${predictionId})`}</p>
         }
       </div>
     </div>

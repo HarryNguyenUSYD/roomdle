@@ -12,3 +12,12 @@ export function getFurnitureSprite(orientation: FurnitureOrientation, color: Hig
       return orientation.sprites.graySrc;
   }
 }
+
+export function isInRect(x: number, y: number, top: number, left: number, width: number, height: number, offset?: number) {
+  return (
+    x >= left - (offset ?? 0) &&
+    x <= left + width + (offset ?? 0) &&
+    y >= top - (offset ?? 0) &&
+    y <= top + height + (offset ?? 0)
+  )
+}

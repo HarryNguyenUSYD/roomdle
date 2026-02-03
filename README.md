@@ -81,3 +81,9 @@ Reworked the ability to hover `Furniture` pieces onto the board as mentioned in 
 Added Zustand into the project, created the `/components/store` directory for all Zustand storage files. Removed `/components/contexts` and all related files to be replaced by Zustand.
 
 Reverted the previous relocation of `<HomeDesktop>` and `<HomeMobile>` to separate files. Now these components are both located in `page.tsx`.
+
+### Commit 2:
+
+feat: added the ability to stick furniture pieces to the board.
+
+Added the ability to put furniture pieces onto the board. However, these pieces can't be removed, moved, and attempts to move them will cause some visual errors. To be fixed in next commit.

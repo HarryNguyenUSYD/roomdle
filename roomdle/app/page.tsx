@@ -23,42 +23,42 @@ export default function Home() {
 
 function HomeDesktop() {
   return (
-      <div className="w-screen h-screen flex flex-col justify-center items-center bg-[#03091b] gap-20">
-        <div className="w-full h-auto flex flex-row justify-center items-center gap-20">
-          <div className="w-full h-full flex flex-col justify-center items-end gap-20">
-            <Title />
-            <StatisticsButton />
-            <SettingsButton />
-          </div>
-          <Gameboard />
-          <div className="w-full h-full flex flex-col justify-center items-start gap-20">
-            <StreakStat />
-            <HistoryButton />
-            <SubmitButton />
-          </div>
+    <div className="w-screen h-screen flex flex-col justify-center items-center bg-[#03091b] gap-20">
+      <div className="w-full h-auto flex flex-row justify-center items-center gap-20">
+        <div className="w-full h-full flex flex-col justify-center items-end gap-20">
+          <Title />
+          <StatisticsButton />
+          <SettingsButton />
         </div>
-        <FurnitureBar />
+        <Gameboard />
+        <div className="w-full h-full flex flex-col justify-center items-start gap-20">
+          <StreakStat />
+          <HistoryButton />
+          <SubmitButton />
+        </div>
       </div>
+      <FurnitureBar />
+    </div>
   )
 }
 
 function HomeMobile() {
   return (
-      <div className="w-screen h-screen flex flex-col justify-center items-center bg-[#03091b] gap-5">
-        <Title />
-        <Gameboard />
-        <StreakStat />
-        <div className="w-full h-auto flex flex-row justify-center items-center gap-10">
-          <div className="w-full h-full flex flex-col justify-center items-end gap-5">
-            <StatisticsButton />
-            <SettingsButton />
-          </div>
-          <div className="w-full h-full flex flex-col justify-center items-start gap-5">
-            <HistoryButton />
-            <SubmitButton />
-          </div>
+    <div className="w-screen h-screen flex flex-col justify-center items-center bg-[#03091b] gap-5">
+      <Title />
+      <Gameboard />
+      <StreakStat />
+      <div className="w-full h-auto flex flex-row justify-center items-center gap-10">
+        <div className="w-full h-full flex flex-col justify-center items-end gap-5">
+          <StatisticsButton />
+          <SettingsButton />
         </div>
-        <FurnitureBar />
+        <div className="w-full h-full flex flex-col justify-center items-start gap-5">
+          <HistoryButton />
+          <SubmitButton />
+        </div>
       </div>
+      <FurnitureBar />
+    </div>
   )
 }

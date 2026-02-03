@@ -17,10 +17,12 @@ export default function GameboardDebug({ puzzle }: GameboardDebugProps) {
     isDebugging,
     isShowingCoordinates,
     isShowingSolution,
+    isShowingPrediction,
     
     setIsDebugging,
     setIsShowingCoordinates,
-    setIsShowingSolution
+    setIsShowingSolution,
+    setIsShowingPrediction
   } = useDebugStore();  
 
   const { isActive, handleSetInactive, handleSetActive } = useMenu();
@@ -71,6 +73,15 @@ export default function GameboardDebug({ puzzle }: GameboardDebugProps) {
               onClick={() => setIsShowingSolution(!isShowingSolution)}
             >
               {isShowingSolution ? "ON" : "OFF"}
+            </button>
+          </div>
+          <div className="w-full flex flex-row justify-between items-center">
+            <p className="text-md lg:text-2xl">Show Prediction:</p>
+            <button
+              className="text-md lg:text-2xl cursor-pointer hover:brightness-75"
+              onClick={() => setIsShowingPrediction(!isShowingPrediction)}
+            >
+              {isShowingPrediction ? "ON" : "OFF"}
             </button>
           </div>
           <button

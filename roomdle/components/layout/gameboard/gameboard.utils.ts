@@ -1,7 +1,7 @@
-import { FurnitureOrientation, HighlightColor } from "@/game/game.types";
+import { FurnitureOrientation, HighlightColor, TileCoordinates } from "@/game/game.types";
 import { EMPTY_TILE, HIGHLIGHT_ORITENTATIONS, SPECIAL_OFFSET, YELLOW_OFFSET } from "./gameboard.highlight";
-import { FurniturePlacement, GameboardTileHighlight, TileCoordinates } from "./gameboard.types";
 import { GAMEBOARD_HEIGHT, GAMEBOARD_WIDTH } from "@/game/game.consts";
+import { GameboardTileHighlight } from "./gameboard.types";
 
 /**
  * [-1, -1][0, -1][1, -1]
@@ -25,11 +25,14 @@ export const DIRECTIONS = [
  * @param pos The position to place
  * @param orientation the orientation of the piece
  */
-export function getPlacementFromOrientation(pos: TileCoordinates, orientation: FurnitureOrientation): FurniturePlacement {
+export function getPlacementFromOrientation(pos: TileCoordinates, orientation: FurnitureOrientation): TileCoordinates[] {
   const out = [];
   for (let i = 0; i < orientation.positions.length; i++) {
     const offset = orientation.positions[i];
-    out.push([pos.x + offset[0], pos.y + offset[1]]);
+    out.push({
+      x: pos.x + offset[0],
+      y: pos.y + offset[1]
+    });
   }
 
   return out;
@@ -41,17 +44,17 @@ export function getPlacementFromOrientation(pos: TileCoordinates, orientation: F
  * @param map the map
  * @returns 
  */
-export function isValidPlacement(placement: FurniturePlacement, map: number[][]) {
+export function isValidPlacement(placement: TileCoordinates[], map: number[][]) {
   let out = true;
 
   for (let i = 0; i < placement.length; i++) {
     const tile = placement[i];
     if (
-      tile[0] < 0 ||
-      tile[0] >= map[0].length ||
-      tile[1] < 0 ||
-      tile[1] >= map.length ||
-      map[tile[0]][tile[1]] !== -1
+      tile.x < 0 ||
+      tile.x >= map[0].length ||
+      tile.y < 0 ||
+      tile.y >= map.length ||
+      map[tile.x][tile.y] !== -1
     ) {
       out &&= false;
     }
@@ -65,8 +68,8 @@ export function isValidPlacement(placement: FurniturePlacement, map: number[][])
  * @param tile the tile
  * @param placement the placement
  */
-export function isTileInPlacement(tile: TileCoordinates, placement: FurniturePlacement) {
-  return Boolean(placement.find((pTile) => (pTile[0] === tile.x && pTile[1] === tile.y)));
+export function isTileInPlacement(tile: TileCoordinates, placement: TileCoordinates[]) {
+  return Boolean(placement.find((pTile) => (pTile.x === tile.x && pTile.y === tile.y)));
 }
 
 /**
@@ -147,7 +150,12 @@ export function compareTileCoordinates(c1: TileCoordinates | null, c2: TileCoord
 }
 
 export function getTileFromPointer(event: PointerEvent, rect: DOMRect): TileCoordinates | null {
-  if (event.clientX - rect.left < 0 || event.clientY - rect.top < 0) { return null; }
+  if (
+    event.clientX - rect.left < 0 ||
+    event.clientX - rect.left > rect.width ||
+    event.clientY - rect.top < 0 ||
+    event.clientY - rect.top > rect.height
+  ) { return null; }
 
   const x = Math.floor((event.clientX - rect.left) / (rect.width / GAMEBOARD_WIDTH));
   const y = Math.floor((event.clientY - rect.top) / (rect.height / GAMEBOARD_HEIGHT));

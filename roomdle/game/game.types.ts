@@ -17,3 +17,13 @@ export type HighlightColor =
   | "gray"   // Tile is not checked yet
   | "yellow" // Tile is used, but not by checked element
   | "green"  // Tile is used by checked element
+
+export type TileCoordinates = {
+  x: number,
+  y: number
+}
+
+export type FurniturePlacement = {
+  id: number,
+  origin: TileCoordinates
+}
