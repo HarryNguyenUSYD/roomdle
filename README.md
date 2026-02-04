@@ -87,3 +87,9 @@ Reverted the previous relocation of `<HomeDesktop>` and `<HomeMobile>` to separa
 feat: added the ability to stick furniture pieces to the board.
 
 Added the ability to put furniture pieces onto the board. However, these pieces can't be removed, moved, and attempts to move them will cause some visual errors. To be fixed in next commit.
+
+### Commit 3:
+
+fix: [x, y] coordinates used in multiple areas are now orienting correctly
+
+Discovered and fixed bug that prevent other `GAMEBOARD_WIDTH` and `GAMEBOARD_HEIGHT` values to be inputted. This stems from the fact that the tile get operation was wrongly written as `tile[x][y]` instead of `tile[y][x]`. Fixing this across multiple areas fixed the bug and now allow other width and height values to be used. The rest of the program remains the same.

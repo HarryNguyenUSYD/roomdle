@@ -87,6 +87,7 @@ export class Puzzle {
       ++loop;
     }
 
+    console.log(this._puzzle);
     this._emit();
   }
 
@@ -102,7 +103,7 @@ export class Puzzle {
             x + pos[0] >= GAMEBOARD_WIDTH ||
             y + pos[1] < 0 ||
             y + pos[1] >= GAMEBOARD_HEIGHT ||
-            this._puzzle[x + pos[0]][y + pos[1]] != -1
+            this._puzzle[y + pos[1]][x + pos[0]] != -1
           ) {
             valid = false;  
           }
@@ -120,8 +121,7 @@ export class Puzzle {
   private _setPlacement(piece: FurnitureOrientation, coord: number[]) {
     for (let i = 0; i < piece.positions.length; i++) {
       const pos = piece.positions[i];
-
-      this._puzzle[coord[0] + pos[0]][coord[1] + pos[1]] = piece.id;
+      this._puzzle[coord[1] + pos[1]][coord[0] + pos[0]] = piece.id;
     } 
   }
 }

@@ -4,7 +4,7 @@ import { FURNITURE_SPRITE_DIR, GAMEBOARD_HEIGHT, GAMEBOARD_WIDTH, PIXELS_PER_UNI
 import { FurnitureOrientation, HighlightColor } from "@/game/game.types";
 import Image from "next/image";
 import { getFurnitureSprite, isInRect } from "./furniture.utils";
-import { motion, useAnimation, useMotionValueEvent } from "motion/react";
+import { motion, useAnimation } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useFurnitureContext } from "./furniture.context";
@@ -51,7 +51,8 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
   const [renderedSize, setRenderedSize] = useState<Size | null>(null);
 
   const ref = useRef<HTMLDivElement>(null);
-  const controls = useAnimation();
+  const mainControls = useAnimation();
+  const placedControls = useAnimation();
 
   /**
    * Initialise the home point
@@ -117,19 +118,19 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
         ref={ref}
         drag
         dragMomentum={false}
-        animate={controls}
+        animate={mainControls}
         onDragStart={() => {
           setLocalDragging(true);
           setIsDragging(true);
           setDraggingFurniture(orientation);
-          controls.start({
+          mainControls.start({
             opacity: 0.25,
             transition: { duration: 0 }
           });
         }}
         onDrag={(_, info) => {
           setPoint(info.point);
-          controls.start({
+          mainControls.start({
             x: 0,
             y: 0,
             transition: { duration: 0 }
@@ -138,10 +139,10 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
         onDragEnd={() => {
           setLocalDragging(false);
           setIsDragging(false);
-          controls.start({
+          mainControls.start({
             x: 0,
             y: 0,
-            opacity: 1,
+            opacity: placement ? 0 : 1,
             transition: {
               x: { duration: 0 },
               y: { duration: 0 },
@@ -159,7 +160,7 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
           draggable={false}
         />
       </motion.div>
-      {(point && renderedSize) && createPortal(
+      {(point && renderedSize && homePoint) && createPortal(
         <motion.div
           className="fixed z-9999 pointer-events-none"
           style={{
@@ -199,13 +200,15 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
               }
             },
             onDragEnd: {
-              left: homePoint?.x,
-              top: homePoint?.y,
+              left: placement ? left + (width / GAMEBOARD_WIDTH) * placement.origin.x : homePoint.x,
+              top: placement ? top + (height / GAMEBOARD_HEIGHT) * placement.origin.y : homePoint.y,
+              width: placement ? (width / GAMEBOARD_WIDTH) * orientation.width : renderedSize.width,
+              height: placement ? (height / GAMEBOARD_HEIGHT) * orientation.height : renderedSize.height,
               opacity: 0,
               transition: {
                 left: { duration: 0.5, ease: "easeOut"},
                 top: { duration: 0.5, ease: "easeOut"},
-                opacity: { delay: 0.25, duration: 0.25, ease: "linear" },
+                opacity: { delay: 0, duration: 0.5, ease: "linear" },
               }
             }
           }}
@@ -221,9 +224,9 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
         </motion.div>,
         document.body
       )}
-      {(placement) && createPortal(
+      {(placement && homePoint) && createPortal(
         <motion.div
-          className="fixed z-999 hover:brightness-125 duration-100 flex-none cursor-grab select-none"
+          className="fixed z-9999 hover:brightness-125 duration-100 flex-none cursor-grab select-none"
           style={{
             width: (width / GAMEBOARD_WIDTH) * orientation.width,
             height: (height / GAMEBOARD_HEIGHT) * orientation.height,
@@ -232,37 +235,37 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
           }}
           drag
           dragMomentum={false}
-          animate={controls}
+          animate={placedControls}
           onDragStart={() => {
             setLocalDragging(true);
             setIsDragging(true);
             setDraggingFurniture(orientation);
-            controls.start({
-              opacity: 0.25,
-              transition: { duration: 0 }
-            });
+            // placedControls.start({
+            //   opacity: 0.25,
+            //   transition: { duration: 0 }
+            // });
           }}
           onDrag={(_, info) => {
             setPoint(info.point);
-            controls.start({
-              x: 0,
-              y: 0,
+            placedControls.start({
+              left: left + (width / GAMEBOARD_WIDTH) * placement.origin.x,
+              top: top + (height / GAMEBOARD_HEIGHT) * placement.origin.y,
               transition: { duration: 0 }
             });
           }}
           onDragEnd={() => {
             setLocalDragging(false);
             setIsDragging(false);
-            controls.start({
-              x: 0,
-              y: 0,
-              opacity: 1,
-              transition: {
-                x: { duration: 0 },
-                y: { duration: 0 },
-                opacity: { delay: 0.25, duration: 0.25, ease: "linear" }
-              }
-            });
+            // placedControls.start({
+            //   left: homePoint.x,
+            //   top: homePoint.y,
+            //   opacity: 1,
+            //   transition: {
+            //     left: { duration: 0.5 },
+            //     top: { duration: 0.5 },
+            //     opacity: { delay: 0.25, duration: 0.25, ease: "linear" }
+            //   }
+            // });
           }}
         >
           <Image

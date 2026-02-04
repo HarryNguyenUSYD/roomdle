@@ -24,11 +24,10 @@ export default function Gameboard() {
 
   const {
     tileColorMap,
-    furniturePlacementMap,
     furnitureTileMap,
     updateTileColorMap,
     addFurniture,
-    removeFurniture,
+    removeFurniture
   } = useGameStateStore();
 
   useEffect(() => {
@@ -45,6 +44,8 @@ export default function Gameboard() {
       if (isValidPlacement(placement, furnitureTileMap)) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setHoveredTiles(placement);
+      } else {
+        setHoveredTiles(null);
       }
     } else {
       setHoveredTiles(null);
@@ -53,9 +54,10 @@ export default function Gameboard() {
 
   useEffect(() => {
     if (!isDragging && draggingFurniture && originTile && hoveredTiles) {
+      removeFurniture(draggingFurniture.id, hoveredTiles);
       addFurniture({ id: draggingFurniture.id, origin: originTile }, hoveredTiles);
     }
-  }, [addFurniture, draggingFurniture, hoveredTiles, isDragging, originTile]);
+  }, [addFurniture, draggingFurniture, hoveredTiles, isDragging, originTile, removeFurniture]);
 
   /**
    * Updating the hovered tile every animation frame for hovering effect
@@ -111,7 +113,7 @@ export default function Gameboard() {
       <div
         ref={ref}
         className={`relative size-[80vw] lg:size-[50vh] flex-none grid touch-none`}
-        style={{ gridTemplateColumns: `repeat(${puzzleSync.length}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${puzzleSync[0].length}, minmax(0, 1fr))` }}
       >
         {puzzleSync.map((rows, y) => (
           rows.map((solution, x) => (
@@ -119,10 +121,10 @@ export default function Gameboard() {
               key={`gameboard_tile_${x}_${y}`}
               x={x}
               y={y}
-              neighbors={getNeighbors(tileColorMap, [x, y])}
-              color={tileColorMap[x][y]}
+              neighbors={getNeighbors(tileColorMap, { x, y })}
+              color={tileColorMap[y][x]}
               solution={solution}
-              predictionId={furnitureTileMap[x][y]}
+              predictionId={furnitureTileMap[y][x]}
               dragHovered={hoveredTiles ? isTileInPlacement({ x, y }, hoveredTiles) : false}
             />
           ))

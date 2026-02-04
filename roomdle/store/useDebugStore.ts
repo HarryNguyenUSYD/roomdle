@@ -16,7 +16,7 @@ export const useDebugStore = create<DebugStore>((set) => ({
   isDebugging: true,
   isShowingCoordinates: false,
   isShowingSolution: false,
-  isShowingPrediction: true,
+  isShowingPrediction: false,
 
   setIsDebugging: (val) => set({ isDebugging: val }),
   setIsShowingCoordinates: (val) => set({ isShowingCoordinates: val }),

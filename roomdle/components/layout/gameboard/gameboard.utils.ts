@@ -54,7 +54,7 @@ export function isValidPlacement(placement: TileCoordinates[], map: number[][]) 
       tile.x >= map[0].length ||
       tile.y < 0 ||
       tile.y >= map.length ||
-      map[tile.x][tile.y] !== -1
+      map[tile.y][tile.x] !== -1
     ) {
       out &&= false;
     }
@@ -78,22 +78,22 @@ export function isTileInPlacement(tile: TileCoordinates, placement: TileCoordina
  * @param pos The coordinates of the tile being checked
  * @returns 0bXXXXYYYY where X are the cardinal values, Y are the diagonal values (1 if same color, 0 if not)
  */
-export function getNeighbors(map: HighlightColor[][], pos: number[]) {
+export function getNeighbors(map: HighlightColor[][], pos: TileCoordinates) {
   let out = 0;
   for (let i = 0; i < DIRECTIONS.length; i++) {
     const d = DIRECTIONS[i];
     if (
-      pos[0] + d[0] >= 0 &&
-      pos[0] + d[0] < map[0].length &&
-      pos[1] + d[1] >= 0 &&
-      pos[1] + d[1] < map.length
+      pos.x + d[0] >= 0 &&
+      pos.x + d[0] < GAMEBOARD_WIDTH &&
+      pos.y + d[1] >= 0 &&
+      pos.y + d[1] < GAMEBOARD_HEIGHT &&
+      map[pos.y + d[1]][pos.x + d[0]] === map[pos.y][pos.x]
     ) {
-      if (map[pos[0] + d[0]][pos[1] + d[1]] === map[pos[0]][pos[1]]) {
-        out |= (1 << (DIRECTIONS.length - 1 - i));
-      }
+      out |= (1 << (DIRECTIONS.length - 1 - i));
     }
   }
 
+  // console.log(pos, out.toString(2).padStart(8, "0"));
   return out;
 }
 
