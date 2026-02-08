@@ -14,7 +14,7 @@ type GameStateStore = {
   updateFurnitureColorMap: (prediction: number[], solution: number[]) => void,
 
   addFurniture: (placement: FurniturePlacement, tiles: TileCoordinates[]) => void,
-  removeFurniture: (id: number, tiles: TileCoordinates[]) => void,
+  removeFurniture: (id: number) => void,
   clearFurniture: () => void,
 };
 
@@ -59,13 +59,11 @@ export const useGameStateStore = create<GameStateStore>((set) => ({
         furnitureTileMap: newTileMap
       })
     }),
-  removeFurniture: (id, tiles) =>
+  removeFurniture: (id) =>
     set((state) => {
-      const newTileMap = state.furnitureTileMap.map(row => [...row]);
-
-      for (const { x, y } of tiles) {
-        newTileMap[y][x] = -1;
-      }
+      const newTileMap = state.furnitureTileMap.map(row => (
+        row.map((val) => (val === id ? -1 : val))
+      ));
 
       return ({
         furniturePlacementMap: state.furniturePlacementMap.filter((p) => (p.id !== id)),

@@ -87,7 +87,6 @@ export class Puzzle {
       ++loop;
     }
 
-    console.log(this._puzzle);
     this._emit();
   }
 

@@ -6,7 +6,6 @@ import Image from "next/image";
 import { getFurnitureSprite, isInRect } from "./furniture.utils";
 import { motion, useAnimation } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useFurnitureContext } from "./furniture.context";
 import { useDragAndDropStore } from "@/store/useDragAndDropStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -26,7 +25,7 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
 
   const grabAtCenter = useSettingsStore((s) => s.grabAtCenter);
   
-  const [localDragging, setLocalDragging] = useState(false);
+  const [isLocalDragging, setIsLocalDragging] = useState(false);
   const [point, setPoint] = useState<Point | null>(null);
 
   const {
@@ -42,17 +41,18 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
   } = useBoardRectStore();
 
   const {
-    furniturePlacementMap
+    furniturePlacementMap,
+    removeFurniture
   } = useGameStateStore();
+
+  const [renderedSize, setRenderedSize] = useState<Size | null>(null);
 
   // The position the furniture piece return to after being dropped
   const [homePoint, setHomePoint] = useState<Point | null>(null);
 
-  const [renderedSize, setRenderedSize] = useState<Size | null>(null);
-
   const ref = useRef<HTMLDivElement>(null);
   const mainControls = useAnimation();
-  const placedControls = useAnimation();
+  const cloneControls = useAnimation();
 
   /**
    * Initialise the home point
@@ -114,38 +114,36 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
         style={{
           gridColumn: `span ${orientation.width}`,
           gridRow: `span ${orientation.height}`,
+          opacity: placement ? "0.25" : "1",
+          pointerEvents: placement ? "none" : "auto"
         }}
         ref={ref}
         drag
         dragMomentum={false}
         animate={mainControls}
         onDragStart={() => {
-          setLocalDragging(true);
+          setIsLocalDragging(true);
           setIsDragging(true);
           setDraggingFurniture(orientation);
-          mainControls.start({
+          mainControls.set({
             opacity: 0.25,
             transition: { duration: 0 }
           });
+          removeFurniture(orientation.id);
         }}
         onDrag={(_, info) => {
           setPoint(info.point);
-          mainControls.start({
+          mainControls.set({
             x: 0,
-            y: 0,
-            transition: { duration: 0 }
+            y: 0
           });
         }}
         onDragEnd={() => {
-          setLocalDragging(false);
+          setIsLocalDragging(false);
           setIsDragging(false);
           mainControls.start({
-            x: 0,
-            y: 0,
-            opacity: placement ? 0 : 1,
+            opacity: placement ? 0.25 : 1,
             transition: {
-              x: { duration: 0 },
-              y: { duration: 0 },
               opacity: { delay: 0.25, duration: 0.25, ease: "linear" }
             }
           });
@@ -160,14 +158,16 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
           draggable={false}
         />
       </motion.div>
-      {(point && renderedSize && homePoint) && createPortal(
+      {(point && renderedSize && homePoint) && (
         <motion.div
           className="fixed z-9999 pointer-events-none"
           style={{
             width: renderedSize.width,
             height: renderedSize.height,
+            opacity: 0
           }}
-          animate={localDragging ? "onDrag" : "onDragEnd"}
+          animate={isLocalDragging ? "onDrag" : (placement ? "onPlace" : "onDragEnd")}
+          transition={{ duration: 0 }}
           variants={{
             onDrag: {
               left: (grabAtCenter ?
@@ -192,24 +192,30 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
                   top, left, width, height, 50
                 ) ? (height / GAMEBOARD_HEIGHT) * orientation.height : renderedSize.height
               ),
+              opacity: 1,
               transition: {
                 left: { duration: 0 },
                 top: { duration: 0 },
                 width: { duration: 0.25 },
                 height: { duration: 0.25 },
+                opacity: { duration: 0 }
               }
             },
             onDragEnd: {
-              left: placement ? left + (width / GAMEBOARD_WIDTH) * placement.origin.x : homePoint.x,
-              top: placement ? top + (height / GAMEBOARD_HEIGHT) * placement.origin.y : homePoint.y,
-              width: placement ? (width / GAMEBOARD_WIDTH) * orientation.width : renderedSize.width,
-              height: placement ? (height / GAMEBOARD_HEIGHT) * orientation.height : renderedSize.height,
+              left: homePoint.x,
+              top: homePoint.y,
+              width: renderedSize.width,
+              height: renderedSize.height,
               opacity: 0,
-              transition: {
-                left: { duration: 0.5, ease: "easeOut"},
-                top: { duration: 0.5, ease: "easeOut"},
-                opacity: { delay: 0, duration: 0.5, ease: "linear" },
-              }
+              transition: { duration: 0.5, ease: "easeOut" }
+            },
+            onPlace: {
+              left: placement && (left + (width / GAMEBOARD_WIDTH) * placement.origin.x),
+              top: placement && (top + (height / GAMEBOARD_HEIGHT) * placement.origin.y),
+              width: (width / GAMEBOARD_WIDTH) * orientation.width,
+              height: (height / GAMEBOARD_HEIGHT) * orientation.height,
+              opacity: 0,
+              transition: { duration: 0 }
             }
           }}
         >
@@ -221,51 +227,41 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
             className="w-full h-full object-contain pixel-art"
             draggable={false}
           />
-        </motion.div>,
-        document.body
+        </motion.div>
       )}
-      {(placement && homePoint) && createPortal(
+      {(placement) && (
         <motion.div
-          className="fixed z-9999 hover:brightness-125 duration-100 flex-none cursor-grab select-none"
+          className="fixed z-9998 hover:brightness-125 duration-100 flex-none
+            cursor-grab select-none pointer-events-auto"
           style={{
-            width: (width / GAMEBOARD_WIDTH) * orientation.width,
-            height: (height / GAMEBOARD_HEIGHT) * orientation.height,
             left: left + (width / GAMEBOARD_WIDTH) * placement.origin.x,
             top: top + (height / GAMEBOARD_HEIGHT) * placement.origin.y,
+            width: (width / GAMEBOARD_WIDTH) * orientation.width,
+            height: (height / GAMEBOARD_HEIGHT) * orientation.height,
           }}
+          animate={cloneControls}
           drag
           dragMomentum={false}
-          animate={placedControls}
           onDragStart={() => {
-            setLocalDragging(true);
+            setIsLocalDragging(true);
             setIsDragging(true);
             setDraggingFurniture(orientation);
-            // placedControls.start({
-            //   opacity: 0.25,
-            //   transition: { duration: 0 }
-            // });
+            cloneControls.start({
+              opacity: 0.25,
+              transition: { duration: 0 }
+            });
+            removeFurniture(orientation.id);
           }}
           onDrag={(_, info) => {
             setPoint(info.point);
-            placedControls.start({
-              left: left + (width / GAMEBOARD_WIDTH) * placement.origin.x,
-              top: top + (height / GAMEBOARD_HEIGHT) * placement.origin.y,
-              transition: { duration: 0 }
-            });
+            cloneControls.set({
+              x: 0,
+              y: 0,
+            })
           }}
           onDragEnd={() => {
-            setLocalDragging(false);
+            setIsLocalDragging(false);
             setIsDragging(false);
-            // placedControls.start({
-            //   left: homePoint.x,
-            //   top: homePoint.y,
-            //   opacity: 1,
-            //   transition: {
-            //     left: { duration: 0.5 },
-            //     top: { duration: 0.5 },
-            //     opacity: { delay: 0.25, duration: 0.25, ease: "linear" }
-            //   }
-            // });
           }}
         >
           <Image
@@ -276,8 +272,7 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
             className="w-full h-full object-contain pixel-art"
             draggable={false}
           />
-        </motion.div>,
-        document.body
+        </motion.div>
       )}
     </>
   )

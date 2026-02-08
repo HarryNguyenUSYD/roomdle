@@ -54,10 +54,9 @@ export default function Gameboard() {
 
   useEffect(() => {
     if (!isDragging && draggingFurniture && originTile && hoveredTiles) {
-      removeFurniture(draggingFurniture.id, hoveredTiles);
       addFurniture({ id: draggingFurniture.id, origin: originTile }, hoveredTiles);
     }
-  }, [addFurniture, draggingFurniture, hoveredTiles, isDragging, originTile, removeFurniture]);
+  }, [addFurniture, draggingFurniture, hoveredTiles, isDragging, originTile]);
 
   /**
    * Updating the hovered tile every animation frame for hovering effect
