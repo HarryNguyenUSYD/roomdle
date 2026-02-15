@@ -144,21 +144,23 @@ export function getHighContrastIcon(color: HighlightColor): number {
   }
 }
 
-export function compareTileCoordinates(c1: TileCoordinates | null, c2: TileCoordinates | null) {
-  if (!c1 || !c2) { return false; }
-  else return (c1.x === c2.x && c1.y === c2.y);
-}
-
-export function getTileFromPointer(event: PointerEvent, rect: DOMRect): TileCoordinates | null {
+export function getTileFromPointer(event: PointerEvent, boardRect: DOMRect, offsetX?: number, offsetY?: number): TileCoordinates | null {
   if (
-    event.clientX - rect.left < 0 ||
-    event.clientX - rect.left > rect.width ||
-    event.clientY - rect.top < 0 ||
-    event.clientY - rect.top > rect.height
+    event.clientX + (offsetX ?? 0) - boardRect.left < 0 ||
+    event.clientX + (offsetX ?? 0) - boardRect.left > boardRect.width ||
+    event.clientY + (offsetY ?? 0) - boardRect.top < 0 ||
+    event.clientY + (offsetY ?? 0) - boardRect.top > boardRect.height
   ) { return null; }
 
-  const x = Math.floor((event.clientX - rect.left) / (rect.width / GAMEBOARD_WIDTH));
-  const y = Math.floor((event.clientY - rect.top) / (rect.height / GAMEBOARD_HEIGHT));
+  const x = Math.floor((event.clientX + (offsetX ?? 0) - boardRect.left) / (boardRect.width / GAMEBOARD_WIDTH));
+  const y = Math.floor((event.clientY + (offsetY ?? 0) - boardRect.top) / (boardRect.height / GAMEBOARD_HEIGHT));
   
   return { x, y }
+}
+
+export function getOffsetFromOrientation(orientation: FurnitureOrientation | null, boardRect: DOMRect) {
+  const offsetX = orientation ? - orientation.width * (boardRect.width / GAMEBOARD_WIDTH) / 2 : 0;
+  const offsetY = orientation ? - orientation.height * (boardRect.height / GAMEBOARD_HEIGHT) / 2 : 0;
+
+  return { offsetX, offsetY }
 }

@@ -1,14 +1,20 @@
 import { GAMEBOARD_WIDTH, GAMEBOARD_HEIGHT, NUM_PIECES_PER_PUZZLE, FURNITURE_ORIENTATIONS } from "./game.consts";
-import { FurnitureOrientation } from "./game.types";
+import { FurnitureOrientation, FurniturePlacement } from "./game.types";
 import { getSeedFromToday, mulberry32 } from "./game.utils";
 
 type Listener = () => void;
 
 export class Puzzle {
-  private _puzzle: number[][] = Array.from({ length: GAMEBOARD_HEIGHT }, () =>
+  private _board: number[][] = Array.from({ length: GAMEBOARD_HEIGHT }, () =>
     Array.from({ length: GAMEBOARD_WIDTH }, () => (-1))
   );
+  private _furniture: FurniturePlacement[] = [];
+
   private _listeners: Listener[] = [];
+  private _snapshot = {
+    board: this._board,
+    furniture: this._furniture
+  };
   
   constructor() {
     const todaySeed = getSeedFromToday();
@@ -27,7 +33,7 @@ export class Puzzle {
   }
 
   public getSnapshot() {
-    return this._puzzle;
+    return this._snapshot;
   }
 
   private _emit() {
@@ -38,7 +44,7 @@ export class Puzzle {
   ///////////////////////////////////////
 
   private _resetPuzzle() {
-    this._puzzle = Array.from({ length: GAMEBOARD_HEIGHT }, () =>
+    this._board = Array.from({ length: GAMEBOARD_HEIGHT }, () =>
       Array.from({ length: GAMEBOARD_WIDTH }, () => (-1))
     );
   }
@@ -77,6 +83,10 @@ export class Puzzle {
           const coord = possiblePlacements[coordIndex];
           this._setPlacement(piece, coord);
           usedPieces.push(piece.id);
+          this._furniture.push({
+            id: piece.id,
+            origin: { x: coord[0], y: coord[1] }
+          });
         } else {
           usedPieces.push(piece.id);
           --i;
@@ -86,6 +96,11 @@ export class Puzzle {
       complete = valid;
       ++loop;
     }
+
+    this._snapshot = {
+      board: this._board,
+      furniture: this._furniture
+    };
 
     this._emit();
   }
@@ -102,7 +117,7 @@ export class Puzzle {
             x + pos[0] >= GAMEBOARD_WIDTH ||
             y + pos[1] < 0 ||
             y + pos[1] >= GAMEBOARD_HEIGHT ||
-            this._puzzle[y + pos[1]][x + pos[0]] != -1
+            this._board[y + pos[1]][x + pos[0]] != -1
           ) {
             valid = false;  
           }
@@ -120,7 +135,7 @@ export class Puzzle {
   private _setPlacement(piece: FurnitureOrientation, coord: number[]) {
     for (let i = 0; i < piece.positions.length; i++) {
       const pos = piece.positions[i];
-      this._puzzle[coord[1] + pos[1]][coord[0] + pos[0]] = piece.id;
+      this._board[coord[1] + pos[1]][coord[0] + pos[0]] = piece.id;
     } 
   }
 }

@@ -1,4 +1,4 @@
-import { HighlightColor } from "./game.types";
+import { HighlightColor, TileCoordinates } from "./game.types";
 
 /**
  * Generate a seed from today's date.
@@ -46,4 +46,9 @@ export function getColor(current: number, solution: number): HighlightColor {
   } else {
     return (current === solution) ? "green" : "yellow";
   }
+}
+
+export function compareTileCoordinates(c1: TileCoordinates | null, c2: TileCoordinates | null) {
+  if (!c1 || !c2) { return false; }
+  else return (c1.x === c2.x && c1.y === c2.y);
 }

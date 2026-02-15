@@ -6,11 +6,13 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { Puzzle } from "@/game/Puzzle";
 import { DEBUG } from "./gameboard.constants";
 import GameboardDebug from "./GameboardDebug";
-import { compareTileCoordinates, getNeighbors, getPlacementFromOrientation, getTileFromPointer, isTileInPlacement, isValidPlacement } from "./gameboard.utils";
+import { getNeighbors, getOffsetFromOrientation, getPlacementFromOrientation, getTileFromPointer, isTileInPlacement, isValidPlacement } from "./gameboard.utils";
 import { useGameStateStore } from "@/store/useGameStateStore";
 import { useDragAndDropStore } from "@/store/useDragAndDropStore";
 import { useBoardRectStore } from "@/store/useBoardRectStore";
 import { TileCoordinates } from "@/game/game.types";
+import { compareTileCoordinates } from "@/game/game.utils";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 export default function Gameboard() {
   const ref = useRef<HTMLDivElement>(null);
@@ -25,14 +27,20 @@ export default function Gameboard() {
   const {
     tileColorMap,
     furnitureTileMap,
-    updateTileColorMap,
+    boardSolution,
+    setPuzzle,
     addFurniture,
-    removeFurniture
+    fullReset
   } = useGameStateStore();
 
+  const {
+    grabAtCenter
+  } = useSettingsStore();
+
   useEffect(() => {
-    updateTileColorMap(puzzleSync);
-  }, [puzzleSync, updateTileColorMap]);
+    setPuzzle(puzzleSync.board, puzzleSync.furniture);
+    fullReset();
+  }, [puzzleSync, setPuzzle, fullReset]);
   
   // Drag and Drop support
   const [originTile, setOriginTiles] = useState<TileCoordinates | null>(null);
@@ -67,8 +75,14 @@ export default function Gameboard() {
         if (!isDragging || !ref.current) {
           setOriginTiles(null);
         } else {
-          const tile = getTileFromPointer(e, ref.current.getBoundingClientRect());
-          setOriginTiles(prev => (!compareTileCoordinates(prev, tile) ? tile : prev));
+          if (grabAtCenter) {
+            const { offsetX, offsetY } = getOffsetFromOrientation(draggingFurniture, ref.current.getBoundingClientRect());
+            const tile = getTileFromPointer(e, ref.current.getBoundingClientRect(), offsetX, offsetY);
+            setOriginTiles(prev => (!compareTileCoordinates(prev, tile) ? tile : prev));
+          } else {
+            const tile = getTileFromPointer(e, ref.current.getBoundingClientRect());
+            setOriginTiles(prev => (!compareTileCoordinates(prev, tile) ? tile : prev));
+          }
         }
       })
     };
@@ -78,7 +92,7 @@ export default function Gameboard() {
     return () => {
       window.removeEventListener("pointermove", onMove);
     };
-  }, [isDragging]);
+  }, [draggingFurniture, grabAtCenter, isDragging]);
 
   /**
    * Update the rect of the board when the screen gets resized
@@ -112,9 +126,9 @@ export default function Gameboard() {
       <div
         ref={ref}
         className={`relative size-[80vw] lg:size-[50vh] flex-none grid touch-none`}
-        style={{ gridTemplateColumns: `repeat(${puzzleSync[0].length}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${boardSolution[0].length}, minmax(0, 1fr))` }}
       >
-        {puzzleSync.map((rows, y) => (
+        {boardSolution.map((rows, y) => (
           rows.map((solution, x) => (
             <Gameboard.Tile
               key={`gameboard_tile_${x}_${y}`}

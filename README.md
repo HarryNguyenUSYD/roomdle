@@ -93,3 +93,17 @@ Added the ability to put furniture pieces onto the board. However, these pieces 
 fix: [x, y] coordinates used in multiple areas are now orienting correctly
 
 Discovered and fixed bug that prevent other `GAMEBOARD_WIDTH` and `GAMEBOARD_HEIGHT` values to be inputted. This stems from the fact that the tile get operation was wrongly written as `tile[x][y]` instead of `tile[y][x]`. Fixing this across multiple areas fixed the bug and now allow other width and height values to be used. The rest of the program remains the same.
+
+## Week 8:
+
+### Commit 1:
+
+feat: fully implemented drag and drop feature
+
+Furniture pieces can now be dragged, placed, removed and replaced on the Gameboard, including animation effects. Works on both desktop and mobile.
+
+### Commit 2:
+
+feat: added the ability to submit and clear pieces. Added counters for number of placed pieces and number of submits (attempts).
+
+Added the functionality of the Submit button, which can now be pressed to highlight tiles and furniture placements. Added the Clear button to remove all pieces from the board. Added two related Settings options: clearing the board after submitting, and only clearing incorrect pieces.

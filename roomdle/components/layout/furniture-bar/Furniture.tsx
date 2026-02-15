@@ -4,7 +4,7 @@ import { FURNITURE_SPRITE_DIR, GAMEBOARD_HEIGHT, GAMEBOARD_WIDTH, PIXELS_PER_UNI
 import { FurnitureOrientation, HighlightColor } from "@/game/game.types";
 import Image from "next/image";
 import { getFurnitureSprite, isInRect } from "./furniture.utils";
-import { motion, useAnimation } from "motion/react";
+import { AnimatePresence, motion, useAnimation } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFurnitureContext } from "./furniture.context";
 import { useDragAndDropStore } from "@/store/useDragAndDropStore";
@@ -25,8 +25,8 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
 
   const grabAtCenter = useSettingsStore((s) => s.grabAtCenter);
   
-  const [isLocalDragging, setIsLocalDragging] = useState(false);
   const [point, setPoint] = useState<Point | null>(null);
+  const [isLocalDragging, setIsLocalDragging] = useState(false);
 
   const {
     setIsDragging,
@@ -126,8 +126,7 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
           setIsDragging(true);
           setDraggingFurniture(orientation);
           mainControls.set({
-            opacity: 0.25,
-            transition: { duration: 0 }
+            opacity: 0.25
           });
           removeFurniture(orientation.id);
         }}
@@ -229,51 +228,78 @@ export default function Furniture({ orientation, color } : FurnitureProps) {
           />
         </motion.div>
       )}
-      {(placement) && (
-        <motion.div
-          className="fixed z-9998 hover:brightness-125 duration-100 flex-none
-            cursor-grab select-none pointer-events-auto"
-          style={{
-            left: left + (width / GAMEBOARD_WIDTH) * placement.origin.x,
-            top: top + (height / GAMEBOARD_HEIGHT) * placement.origin.y,
-            width: (width / GAMEBOARD_WIDTH) * orientation.width,
-            height: (height / GAMEBOARD_HEIGHT) * orientation.height,
-          }}
-          animate={cloneControls}
-          drag
-          dragMomentum={false}
-          onDragStart={() => {
-            setIsLocalDragging(true);
-            setIsDragging(true);
-            setDraggingFurniture(orientation);
-            cloneControls.start({
-              opacity: 0.25,
-              transition: { duration: 0 }
-            });
-            removeFurniture(orientation.id);
-          }}
-          onDrag={(_, info) => {
-            setPoint(info.point);
-            cloneControls.set({
-              x: 0,
-              y: 0,
-            })
-          }}
-          onDragEnd={() => {
-            setIsLocalDragging(false);
-            setIsDragging(false);
-          }}
-        >
-          <Image
-            src={FURNITURE_SPRITE_DIR + getFurnitureSprite(orientation, color)}
-            width={orientation.width * PIXELS_PER_UNIT}
-            height={orientation.height * PIXELS_PER_UNIT}
-            alt={`Furniture with ID ${orientation.id}, positions ${orientation.positions}`}
-            className="w-full h-full object-contain pixel-art"
-            draggable={false}
-          />
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {(placement) && (
+          <motion.div
+            className="fixed z-9998 hover:brightness-125 duration-100 flex-none
+              cursor-grab select-none pointer-events-auto"
+            style={{
+              left: left + (width / GAMEBOARD_WIDTH) * placement.origin.x,
+              top: top + (height / GAMEBOARD_HEIGHT) * placement.origin.y,
+              width: (width / GAMEBOARD_WIDTH) * orientation.width,
+              height: (height / GAMEBOARD_HEIGHT) * orientation.height,
+            }}
+            animate={cloneControls}
+            drag
+            dragMomentum={false}
+            onDragStart={() => {
+              setIsLocalDragging(true);
+              setIsDragging(true);
+              setDraggingFurniture(orientation);
+              cloneControls.start({
+                opacity: 0.25,
+                transition: { duration: 0 }
+              });
+              removeFurniture(orientation.id);
+            }}
+            onDrag={(_, info) => {
+              setPoint(info.point);
+              cloneControls.set({
+                x: 0,
+                y: 0,
+              })
+            }}
+            onDragEnd={() => {
+              setIsLocalDragging(false);
+              setIsDragging(false);
+            }}
+            // variants={{
+            //   exit: {
+            //     left: homePoint?.x,
+            //     top: homePoint?.y,
+            //     width: renderedSize?.width,
+            //     height: renderedSize?.height,
+            //     opacity: 0,
+            //     transition: { duration: 0.5, ease: "easeOut" }
+            //   },
+            //   fastExit: {
+            //     x: 0,
+            //     y: 0,
+            //     opacity: 0,
+            //     transition: { duration: 0 }
+            //   }
+            // }}
+            // exit={isDragging ? "fastExit" : "exit"}
+            // exit={{
+            //   left: homePoint?.x,
+            //   top: homePoint?.y,
+            //   width: renderedSize?.width,
+            //   height: renderedSize?.height,
+            //   opacity: 0,
+            //   transition: { duration: 0.5, ease: "easeOut" }
+            // }}
+          >
+            <Image
+              src={FURNITURE_SPRITE_DIR + getFurnitureSprite(orientation, color)}
+              width={orientation.width * PIXELS_PER_UNIT}
+              height={orientation.height * PIXELS_PER_UNIT}
+              alt={`Furniture with ID ${orientation.id}, positions ${orientation.positions}`}
+              className="w-full h-full object-contain pixel-art"
+              draggable={false}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

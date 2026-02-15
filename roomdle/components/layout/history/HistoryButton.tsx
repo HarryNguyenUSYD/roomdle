@@ -11,7 +11,9 @@ export default function HistoryButton() {
     <>
       {isActive && (
         <Menu handleSetInactive={handleSetInactive}>
-          <p className="text-md lg:text-2xl">(content goes here...)</p>
+          <div className="w-full h-auto">
+
+          </div>
         </Menu>
       )}
       <MenuButton onClick={handleSetActive}>

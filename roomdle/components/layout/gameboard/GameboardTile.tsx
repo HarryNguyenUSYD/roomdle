@@ -7,6 +7,7 @@ import { getHighContrastIcon, getHighlightWithColor } from "./gameboard.utils";
 import { useMemo, useRef } from "react";
 import { useDebugStore } from "@/store/useDebugStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useDragAndDropStore } from "@/store/useDragAndDropStore";
 
 export default function GameboardTile({ x, y, neighbors, color, solution, predictionId, dragHovered }: GameboardTileState) {
   const gameboardContext = useGameboardContext();
@@ -17,6 +18,10 @@ export default function GameboardTile({ x, y, neighbors, color, solution, predic
     isShowingSolution,
     isShowingPrediction
   } = useDebugStore();
+
+  const {
+    isDragging
+  } = useDragAndDropStore();
 
   const highContrast = useSettingsStore((s) => s.highContrast);
 
@@ -29,7 +34,8 @@ export default function GameboardTile({ x, y, neighbors, color, solution, predic
   
   return (
     <div
-      className={`relative w-full h-full duration-100 select-none ${dragHovered ? "brightness-500" : "hover:brightness-150"}`}
+      className={`relative w-full h-full duration-100 select-none
+        ${dragHovered ? "brightness-500" : (!isDragging && "hover:brightness-150")}`}
       ref={ref}
     >
       <div
